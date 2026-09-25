@@ -1,0 +1,28 @@
+rules:
+  - rule_id: CONFIDENTIAL_TO_EXTERNAL
+    name: Confidential data to external destination
+    source_sensitivity: CONFIDENTIAL
+    destination: EXTERNAL
+    verdict: BLOCK
+    reason: Confidential data must not be sent to an external destination.
+
+  - rule_id: INTERNAL_TO_EXTERNAL
+    name: Internal data to external destination
+    source_sensitivity: INTERNAL
+    destination: EXTERNAL
+    verdict: WARN
+    reason: Internal data requires additional review before external transmission.
+
+  - rule_id: PUBLIC_TO_EXTERNAL
+    name: Public data to external destination
+    source_sensitivity: PUBLIC
+    destination: EXTERNAL
+    verdict: ALLOW
+    reason: Public data may be sent externally.
+
+  - rule_id: CONFIDENTIAL_TO_MEMORY
+    name: Confidential data persistence
+    source_sensitivity: CONFIDENTIAL
+    destination: MEMORY
+    verdict: WARN
+    reason: Persisting confidential data in agent memory requires review.
