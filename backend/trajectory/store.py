@@ -105,3 +105,14 @@ class TrajectoryStore:
         """
 
         return len(self.get_session_steps(session_id))
+
+    def update_decision(
+        self,
+        step_id: str,
+        verdict: str,
+        risk_score: float,
+    ) -> None:
+        step = self.get_step(step_id)
+
+        step.verdict = verdict
+        step.risk_score = risk_score

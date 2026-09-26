@@ -112,3 +112,52 @@ class ProvenanceGraph:
                 f"No provenance path exists from {source_id} "
                 f"to {target_id}"
             ) from exc
+
+    def get_depth(self, object_id: str) -> int:
+        if object_id not in self.graph:
+            raise ValueError(f"Data object not found: {object_id}")
+
+        ancestors = nx.ancestors(self.graph, object_id)
+
+        if not ancestors:
+            return 0
+
+        max_depth = 0
+
+        for ancestor in ancestors:
+            try:
+                distance = nx.shortest_path_length(
+                    self.graph,
+                    ancestor,
+                    object_id,
+                )
+                max_depth = max(max_depth, distance)
+            except nx.NetworkXNoPath:
+                continue
+
+        return max_depth  
+
+    def get_transformation_depth(self, object_id: str) -> int:
+        if object_id not in self.graph:
+            raise ValueError(f"Data object not found: {object_id}")
+
+        data_object = self.graph.nodes[object_id]["data_object"]
+
+        transformation_count = 0
+
+        if data_object.transformation:
+            transformation_count += 1
+
+        for ancestor_id in nx.ancestors(self.graph, object_id):
+            ancestor = self.graph.nodes[ancestor_id]["data_object"]
+
+            if ancestor.transformation:
+                transformation_count += 1
+
+        return transformation_count  
+
+    def get_object(self, object_id: str) -> DataObject:
+        if object_id not in self.graph:
+            raise ValueError(f"Data object not found: {object_id}")
+
+        return self.graph.nodes[object_id]["data_object"]

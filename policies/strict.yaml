@@ -1,0 +1,40 @@
+rules:
+  - name: STRICT_CONFIDENTIAL_TO_EXTERNAL
+    rule_id: strict_confidential_external
+    reason: Confidential data must never be sent externally.
+    source_sensitivity: CONFIDENTIAL
+    destination: EXTERNAL
+    verdict: BLOCK
+    priority: 100
+
+  - name: STRICT_INTERNAL_TO_EXTERNAL
+    rule_id: strict_internal_external
+    reason: Internal data must not be sent externally.
+    source_sensitivity: INTERNAL
+    destination: EXTERNAL
+    verdict: BLOCK
+    priority: 90
+
+  - name: STRICT_PUBLIC_TO_EXTERNAL
+    rule_id: strict_public_external
+    reason: Public data may be sent externally.
+    source_sensitivity: PUBLIC
+    destination: EXTERNAL
+    verdict: ALLOW
+    priority: 10
+
+  - name: STRICT_CONFIDENTIAL_TO_MEMORY
+    rule_id: strict_confidential_memory
+    reason: Confidential data must not be persisted in memory.
+    source_sensitivity: CONFIDENTIAL
+    destination: MEMORY
+    verdict: BLOCK
+    priority: 90
+
+  - name: STRICT_INTERNAL_TO_MEMORY
+    rule_id: strict_internal_memory
+    reason: Internal data requires a warning before memory persistence.
+    source_sensitivity: INTERNAL
+    destination: MEMORY
+    verdict: WARN
+    priority: 60
