@@ -1,0 +1,47 @@
+# ================================
+# Python virtual environment
+# ================================
+.venv/
+venv/
+env/
+
+# ================================
+# Python cache / compiled files
+# ================================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ================================
+# Testing / coverage
+# ================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# ================================
+# IDE / editor files
+# ================================
+.vscode/
+.idea/
+
+# ================================
+# OS generated files
+# ================================
+.DS_Store
+Thumbs.db
+
+# ================================
+# Local datasets
+# ================================
+data/raw/
+data/processed/
+
+# ================================
+# Local secrets / environment
+# ================================
+.env
+.env.*
+!.env.example

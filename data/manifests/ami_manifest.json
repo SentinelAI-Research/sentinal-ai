@@ -1,0 +1,22 @@
+{
+  "dataset_name": "AMI Meeting Corpus",
+  "dataset_version": "knkarthick/AMI",
+  "created_at": "2026-09-27T09:34:27.348918+00:00",
+  "files": [
+    {
+      "path": "test.jsonl",
+      "size_bytes": 825909,
+      "sha256": "68757688172c4bb6dd663e28a9300584dc7ff413e79ec689ceb2984cded9e438"
+    },
+    {
+      "path": "train.jsonl",
+      "size_bytes": 6574071,
+      "sha256": "b2616bca50884fd446973817d067b58fa61b65218e8965cb64dfedaed68f1044"
+    },
+    {
+      "path": "validation.jsonl",
+      "size_bytes": 1090382,
+      "sha256": "885601328b9be85aa49a65cbd0c3c9f1d7702446413bbee912048a973482bbdd"
+    }
+  ]
+}

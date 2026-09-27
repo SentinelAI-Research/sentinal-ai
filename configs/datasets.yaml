@@ -1,0 +1,39 @@
+datasets:
+  ami:
+    name: knkarthick/AMI
+    version: "1.0"
+    license: "CC BY 4.0"
+    source: "https://huggingface.co/datasets/knkarthick/AMI"
+    official_source: "https://groups.inf.ed.ac.uk/ami/corpus/"
+    task: "summarization"
+    language: "en"
+    source_type: "public"
+    purpose: "Primary real-world corpus for long-form text, summarization transformations, and provenance tracking."
+    splits:
+      - train
+      - validation
+      - test
+    local_directory: "data/raw/ami"
+
+  enron:
+    name: "Enron Email Dataset"
+    version: "CMU release"
+    license: "See source terms"
+    source: "https://www.cs.cmu.edu/~enron/"
+    official_source: "https://www.cs.cmu.edu/~enron/"
+    task: "email-document processing"
+    language: "en"
+    source_type: "public"
+    purpose: "Real email/document source material for long-horizon, memory-mediated, and communication scenarios."
+    local_directory: "data/raw/enron"
+
+  pii_masking:
+    name: ai4privacy/pii-masking-200k
+    version: "current dataset release"
+    license: "See dataset license"
+    source: "https://huggingface.co/datasets/ai4privacy/pii-masking-200k"
+    task: "PII detection and masking"
+    language: "multilingual"
+    source_type: "public"
+    purpose: "PII and sensitivity feature development and validation."
+    local_directory: "data/raw/pii_masking"
