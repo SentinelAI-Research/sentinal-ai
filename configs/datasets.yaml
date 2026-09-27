@@ -17,14 +17,15 @@ datasets:
 
   enron:
     name: "Enron Email Dataset"
-    version: "CMU release"
-    license: "See source terms"
+    version: "2015-05-07"
+    license: "Research dataset; see official source terms"
     source: "https://www.cs.cmu.edu/~enron/"
+    download_url: "https://www.cs.cmu.edu/~enron/enron_mail_20150507.tar.gz"
     official_source: "https://www.cs.cmu.edu/~enron/"
     task: "email-document processing"
     language: "en"
     source_type: "public"
-    purpose: "Real email/document source material for long-horizon, memory-mediated, and communication scenarios."
+    purpose: "Real email/document source material for long-horizon, memory-mediated, retrieval, and communication scenarios."
     local_directory: "data/raw/enron"
 
   pii_masking:

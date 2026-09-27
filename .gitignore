@@ -45,3 +45,10 @@ data/processed/
 .env
 .env.*
 !.env.example
+
+# Generated ML artifacts
+models/*.joblib
+models/hard_negative/*.joblib
+
+# Generated experiment outputs
+results/ml_evaluation/

@@ -1,6 +1,12 @@
 from typing import Callable
 
+"""
+ToolExecutor
+    ↓
+registered tools only
 
+This gives us controlled execution boundary
+"""
 class ToolExecutor:
     def __init__(self):
         self._tools: dict[str, Callable] = {}
