@@ -1,0 +1,6 @@
+pydantic
+PyYAML
+networkx
+requests
+pytest
+datasets
