@@ -1,0 +1,16 @@
+{
+  "model_type": "HistGradientBoostingClassifier",
+  "include_provenance": true,
+  "features": [
+    "has_input_object",
+    "has_provenance",
+    "is_external_action",
+    "is_memory_operation",
+    "is_transformation",
+    "provenance_depth",
+    "sensitivity_encoded",
+    "tool_encoded",
+    "transformation_depth",
+    "transformation_encoded"
+  ]
+}

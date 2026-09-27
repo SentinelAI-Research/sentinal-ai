@@ -1,0 +1,40 @@
+{
+  "model_type": "HistGradientBoostingClassifier",
+  "random_seed": 42,
+  "classifier_config": {
+    "learning_rate": 0.05,
+    "max_iter": 200,
+    "max_leaf_nodes": 15,
+    "l2_regularization": 1.0,
+    "random_state": 42
+  },
+  "include_provenance": false,
+  "feature_count": 7,
+  "features": [
+    "has_input_object",
+    "is_external_action",
+    "is_memory_operation",
+    "is_transformation",
+    "sensitivity_encoded",
+    "tool_encoded",
+    "transformation_encoded"
+  ],
+  "train_records": 960,
+  "test_records": 240,
+  "train_trajectories": 160,
+  "test_trajectories": 40,
+  "excluded_features": [
+    "content_hash",
+    "label",
+    "label_encoded",
+    "object_id",
+    "record_id",
+    "scenario_id",
+    "source_dataset",
+    "source_object_id",
+    "step_number",
+    "total_steps",
+    "trajectory_id",
+    "trajectory_progress"
+  ]
+}

@@ -1,31 +1,59 @@
+from __future__ import annotations
+
 from pathlib import Path
 
 
-MEMORY_FILE = Path("data/sample/memory.txt")
+DEFAULT_MEMORY_FILE = Path("data/sample/memory.txt")
+
+# Backward-compatible alias used by existing code/tests.
+MEMORY_FILE = DEFAULT_MEMORY_FILE
 
 
-def write_memory(content: str) -> str:
+def write_memory(
+    content: str,
+    memory_path: str | Path | None = None,
+) -> str:
     """
-    Persist information into SentinelAI's local memory store.
+    Persist content to a local memory file.
+
+    If memory_path is provided, that file is used for the memory
+    operation. Otherwise, the existing default memory file is used.
+
+    The optional memory_path allows individual trajectories to have
+    isolated memory contexts without changing the existing API.
     """
+
+    if not isinstance(content, str):
+        raise TypeError(
+            f"content must be str, got {type(content).__name__}"
+        )
 
     if not content.strip():
         raise ValueError("Memory content cannot be empty.")
 
-    MEMORY_FILE.parent.mkdir(parents=True, exist_ok=True)
+    path = Path(memory_path) if memory_path is not None else MEMORY_FILE
 
-    with MEMORY_FILE.open("a", encoding="utf-8") as file:
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with path.open("a", encoding="utf-8") as file:
         file.write(content.strip() + "\n")
 
     return content.strip()
 
 
-def read_memory() -> str:
+def read_memory(
+    memory_path: str | Path | None = None,
+) -> str:
     """
-    Read all information currently stored in local memory.
+    Read the complete contents of a local memory file.
+
+    If memory_path is provided, that file is used. Otherwise, the
+    existing default memory file is used.
     """
 
-    if not MEMORY_FILE.exists():
+    path = Path(memory_path) if memory_path is not None else MEMORY_FILE
+
+    if not path.exists():
         return ""
 
-    return MEMORY_FILE.read_text(encoding="utf-8")
+    return path.read_text(encoding="utf-8")

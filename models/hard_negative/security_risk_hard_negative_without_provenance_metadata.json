@@ -1,0 +1,58 @@
+{
+  "model_name": "security_risk_hard_negative_without_provenance",
+  "use_provenance": false,
+  "classifier": "HistGradientBoostingClassifier",
+  "classifier_config": {
+    "learning_rate": 0.05,
+    "max_iter": 200,
+    "max_leaf_nodes": 15,
+    "l2_regularization": 1.0,
+    "random_state": 42
+  },
+  "feature_names": [
+    "has_input_object",
+    "is_external_action",
+    "is_memory_operation",
+    "is_transformation",
+    "sensitivity_encoded",
+    "tool_encoded",
+    "transformation_encoded"
+  ],
+  "train_records": 1920,
+  "test_records": 480,
+  "train_trajectories": 320,
+  "test_trajectories": 80,
+  "classification_report": {
+    "0": {
+      "precision": 0.71875,
+      "recall": 1.0,
+      "f1-score": 0.8363636363636363,
+      "support": 115.0
+    },
+    "1": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 320.0
+    },
+    "2": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 45.0
+    },
+    "accuracy": 0.90625,
+    "macro avg": {
+      "precision": 0.5729166666666666,
+      "recall": 0.6666666666666666,
+      "f1-score": 0.6121212121212122,
+      "support": 480.0
+    },
+    "weighted avg": {
+      "precision": 0.8388671875,
+      "recall": 0.90625,
+      "f1-score": 0.8670454545454546,
+      "support": 480.0
+    }
+  }
+}

@@ -4,3 +4,5 @@ networkx
 requests
 pytest
 datasets
+scikit-learn
+joblib
