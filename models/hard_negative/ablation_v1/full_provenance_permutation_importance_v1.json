@@ -1,0 +1,74 @@
+{
+  "method": "sklearn.inspection.permutation_importance",
+  "scoring": "f1_macro",
+  "n_repeats": 10,
+  "random_state": 42,
+  "results": [
+    {
+      "feature": "is_external_action",
+      "mean_macro_f1_decrease": 0.36141425763959,
+      "std": 0.012232163578609932
+    },
+    {
+      "feature": "sensitive_ancestor_count",
+      "mean_macro_f1_decrease": 0.34021141224783846,
+      "std": 0.01647162226106457
+    },
+    {
+      "feature": "has_input_object",
+      "mean_macro_f1_decrease": 0.2366791236219669,
+      "std": 0.006727207526231482
+    },
+    {
+      "feature": "has_provenance",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "has_sensitive_ancestor",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "is_memory_operation",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "is_transformation",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "max_ancestor_sensitivity_encoded",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "provenance_depth",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "sensitivity_encoded",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "tool_encoded",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "transformation_depth",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    },
+    {
+      "feature": "transformation_encoded",
+      "mean_macro_f1_decrease": 0.0,
+      "std": 0.0
+    }
+  ],
+  "caveat": "Correlated features can share or mask importance. Treat this as diagnostic evidence, not causal attribution."
+}
