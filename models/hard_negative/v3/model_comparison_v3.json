@@ -1,0 +1,281 @@
+{
+  "benchmark": "SentinelAI Shortcut-Resistant Provenance Evaluation V3",
+  "synthetic_only": true,
+  "seed": 42,
+  "train_file": "data\\processed\\hard_negative\\v3\\split\\train_v3.jsonl",
+  "test_file": "data\\processed\\hard_negative\\v3\\split\\test_v3.jsonl",
+  "train_rows": 2880,
+  "test_rows": 720,
+  "train_pairs": 240,
+  "test_pairs": 60,
+  "pair_overlap_count": 0,
+  "trajectory_overlap_count": 0,
+  "models": {
+    "baseline_without_provenance": {
+      "features": [
+        "has_input_object",
+        "is_external_action",
+        "is_memory_operation",
+        "is_transformation",
+        "sensitivity_encoded",
+        "tool_encoded",
+        "transformation_encoded"
+      ],
+      "feature_count": 7,
+      "accuracy": 0.9166666666666666,
+      "macro_f1": 0.8222222222222223,
+      "classification_report": {
+        "SAFE": {
+          "precision": 1.0,
+          "recall": 0.6666666666666666,
+          "f1-score": 0.8,
+          "support": 180.0
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 480.0
+        },
+        "VIOLATION": {
+          "precision": 0.5,
+          "recall": 1.0,
+          "f1-score": 0.6666666666666666,
+          "support": 60.0
+        },
+        "accuracy": 0.9166666666666666,
+        "macro avg": {
+          "precision": 0.8333333333333334,
+          "recall": 0.8888888888888888,
+          "f1-score": 0.8222222222222223,
+          "support": 720.0
+        },
+        "weighted avg": {
+          "precision": 0.9583333333333334,
+          "recall": 0.9166666666666666,
+          "f1-score": 0.9222222222222223,
+          "support": 720.0
+        }
+      },
+      "confusion_matrix_labels_order": [
+        "SAFE",
+        "EARLY_RISK",
+        "VIOLATION"
+      ],
+      "confusion_matrix": [
+        [
+          120,
+          0,
+          60
+        ],
+        [
+          0,
+          480,
+          0
+        ],
+        [
+          0,
+          0,
+          60
+        ]
+      ],
+      "predicted_label_counts": {
+        "VIOLATION": 120,
+        "SAFE": 120,
+        "EARLY_RISK": 480
+      },
+      "model_path": "models\\hard_negative\\v3\\baseline_without_provenance_v3.joblib",
+      "permutation_importance": [
+        {
+          "feature": "has_input_object",
+          "mean_macro_f1_decrease": 0.264526759373898,
+          "std": 0.012083409614673258
+        },
+        {
+          "feature": "is_external_action",
+          "mean_macro_f1_decrease": 0.24736359594737137,
+          "std": 0.005290240445522909
+        },
+        {
+          "feature": "is_memory_operation",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "is_transformation",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "sensitivity_encoded",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "tool_encoded",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "transformation_encoded",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        }
+      ]
+    },
+    "provenance_aware": {
+      "features": [
+        "has_input_object",
+        "is_external_action",
+        "is_memory_operation",
+        "is_transformation",
+        "sensitivity_encoded",
+        "tool_encoded",
+        "transformation_encoded",
+        "provenance_depth",
+        "transformation_depth",
+        "has_provenance",
+        "has_sensitive_ancestor",
+        "sensitive_ancestor_count",
+        "max_ancestor_sensitivity_encoded"
+      ],
+      "feature_count": 13,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "classification_report": {
+        "SAFE": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 180.0
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 480.0
+        },
+        "VIOLATION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 60.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 720.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 720.0
+        }
+      },
+      "confusion_matrix_labels_order": [
+        "SAFE",
+        "EARLY_RISK",
+        "VIOLATION"
+      ],
+      "confusion_matrix": [
+        [
+          180,
+          0,
+          0
+        ],
+        [
+          0,
+          480,
+          0
+        ],
+        [
+          0,
+          0,
+          60
+        ]
+      ],
+      "predicted_label_counts": {
+        "VIOLATION": 60,
+        "SAFE": 180,
+        "EARLY_RISK": 480
+      },
+      "model_path": "models\\hard_negative\\v3\\provenance_aware_v3.joblib",
+      "permutation_importance": [
+        {
+          "feature": "is_external_action",
+          "mean_macro_f1_decrease": 0.4212275804321389,
+          "std": 0.01262165164505159
+        },
+        {
+          "feature": "has_sensitive_ancestor",
+          "mean_macro_f1_decrease": 0.3424192983171158,
+          "std": 0.019660170514370207
+        },
+        {
+          "feature": "has_input_object",
+          "mean_macro_f1_decrease": 0.2621698528208604,
+          "std": 0.007055492266099587
+        },
+        {
+          "feature": "is_memory_operation",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "is_transformation",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "sensitivity_encoded",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "tool_encoded",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "transformation_encoded",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "provenance_depth",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "transformation_depth",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "has_provenance",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "sensitive_ancestor_count",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        },
+        {
+          "feature": "max_ancestor_sensitivity_encoded",
+          "mean_macro_f1_decrease": 0.0,
+          "std": 0.0
+        }
+      ]
+    }
+  },
+  "caveat": "Controlled synthetic benchmark. High scores do not establish real-world performance. Inspect feature shortcuts and test unseen scenario templates before drawing generalization claims.",
+  "difference_provenance_minus_baseline": {
+    "accuracy_percentage_points": 8.3333,
+    "macro_f1_percentage_points": 17.7778,
+    "violation_recall_percentage_points": 0.0
+  }
+}

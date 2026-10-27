@@ -1,0 +1,453 @@
+{
+  "experiment": "sentinelai_provenance_feature_ablation_v1",
+  "created_at_utc": "2026-10-26T15:13:41.902994+00:00",
+  "split_integrity": {
+    "train_feature_views_aligned": true,
+    "test_feature_views_aligned": true,
+    "train_test_trajectory_overlap_count": 0,
+    "train_rows": 1920,
+    "test_rows": 480,
+    "train_trajectories": 320,
+    "test_trajectories": 80
+  },
+  "classifier": "HistGradientBoostingClassifier",
+  "classifier_config": {
+    "learning_rate": 0.05,
+    "max_iter": 200,
+    "max_leaf_nodes": 15,
+    "l2_regularization": 1.0,
+    "random_state": 42
+  },
+  "class_id_to_name": {
+    "0": "SAFE",
+    "1": "EARLY_RISK",
+    "2": "VIOLATION"
+  },
+  "results": {
+    "baseline_without_provenance": {
+      "feature_count": 7,
+      "accuracy": 0.9166666666666666,
+      "macro_f1": 0.6190476190476191,
+      "macro_precision": 0.5833333333333334,
+      "macro_recall": 0.6666666666666666,
+      "accuracy_delta_vs_full_provenance": -0.08333333333333337,
+      "macro_f1_delta_vs_full_provenance": -0.38095238095238093,
+      "per_class": {
+        "SAFE": {
+          "precision": 0.75,
+          "recall": 1.0,
+          "f1": 0.8571428571428571,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            40,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    "full_provenance": {
+      "feature_count": 13,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "accuracy_delta_vs_full_provenance": 0.0,
+      "macro_f1_delta_vs_full_provenance": 0.0,
+      "per_class": {
+        "SAFE": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            0,
+            0,
+            40
+          ]
+        ]
+      }
+    },
+    "drop_has_sensitive_ancestor": {
+      "feature_count": 12,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "accuracy_delta_vs_full_provenance": 0.0,
+      "macro_f1_delta_vs_full_provenance": 0.0,
+      "per_class": {
+        "SAFE": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            0,
+            0,
+            40
+          ]
+        ]
+      }
+    },
+    "drop_sensitive_ancestor_count": {
+      "feature_count": 12,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "accuracy_delta_vs_full_provenance": 0.0,
+      "macro_f1_delta_vs_full_provenance": 0.0,
+      "per_class": {
+        "SAFE": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            0,
+            0,
+            40
+          ]
+        ]
+      }
+    },
+    "drop_both_sensitive_ancestor_features": {
+      "feature_count": 11,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "accuracy_delta_vs_full_provenance": 0.0,
+      "macro_f1_delta_vs_full_provenance": 0.0,
+      "per_class": {
+        "SAFE": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            0,
+            0,
+            40
+          ]
+        ]
+      }
+    },
+    "drop_ancestor_sensitivity_group": {
+      "feature_count": 10,
+      "accuracy": 0.9166666666666666,
+      "macro_f1": 0.6190476190476191,
+      "macro_precision": 0.5833333333333334,
+      "macro_recall": 0.6666666666666666,
+      "accuracy_delta_vs_full_provenance": -0.08333333333333337,
+      "macro_f1_delta_vs_full_provenance": -0.38095238095238093,
+      "per_class": {
+        "SAFE": {
+          "precision": 0.75,
+          "recall": 1.0,
+          "f1": 0.8571428571428571,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            40,
+            0,
+            0
+          ]
+        ]
+      }
+    },
+    "drop_provenance_structure_group": {
+      "feature_count": 10,
+      "accuracy": 1.0,
+      "macro_f1": 1.0,
+      "macro_precision": 1.0,
+      "macro_recall": 1.0,
+      "accuracy_delta_vs_full_provenance": 0.0,
+      "macro_f1_delta_vs_full_provenance": 0.0,
+      "per_class": {
+        "SAFE": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            0,
+            0,
+            40
+          ]
+        ]
+      }
+    },
+    "drop_all_provenance": {
+      "feature_count": 7,
+      "accuracy": 0.9166666666666666,
+      "macro_f1": 0.6190476190476191,
+      "macro_precision": 0.5833333333333334,
+      "macro_recall": 0.6666666666666666,
+      "accuracy_delta_vs_full_provenance": -0.08333333333333337,
+      "macro_f1_delta_vs_full_provenance": -0.38095238095238093,
+      "per_class": {
+        "SAFE": {
+          "precision": 0.75,
+          "recall": 1.0,
+          "f1": 0.8571428571428571,
+          "support": 120
+        },
+        "EARLY_RISK": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 320
+        },
+        "VIOLATION": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 40
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "SAFE",
+          "EARLY_RISK",
+          "VIOLATION"
+        ],
+        "rows_true_columns_predicted": [
+          [
+            120,
+            0,
+            0
+          ],
+          [
+            0,
+            320,
+            0
+          ],
+          [
+            40,
+            0,
+            0
+          ]
+        ]
+      }
+    }
+  },
+  "interpretation_note": "Compare feature ablations on the same held-out Split V2 rows. Large score drops after removing a feature indicate model dependence, not necessarily useful causal signal. Inspect ablation_audit_v1.json for features whose values separate labels unusually cleanly."
+}

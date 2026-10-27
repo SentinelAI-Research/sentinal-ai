@@ -1,0 +1,12 @@
+{
+  "experiment": "provenance_hard_negative_split_v2",
+  "same_split": true,
+  "without_provenance": {
+    "accuracy": 0.9166666666666666,
+    "macro_f1": 0.6190476190476191
+  },
+  "with_provenance": {
+    "accuracy": 1.0,
+    "macro_f1": 1.0
+  }
+}

@@ -1,0 +1,1031 @@
+{
+  "created_at_utc": "2026-10-26T15:13:25.435637+00:00",
+  "input_files": {
+    "train_without": "data\\processed\\hard_negative\\split_v2\\train_without_provenance.jsonl",
+    "test_without": "data\\processed\\hard_negative\\split_v2\\test_without_provenance.jsonl",
+    "train_with": "data\\processed\\hard_negative\\split_v2\\train_with_provenance.jsonl",
+    "test_with": "data\\processed\\hard_negative\\split_v2\\test_with_provenance.jsonl"
+  },
+  "split_integrity": {
+    "train_feature_views_aligned": true,
+    "test_feature_views_aligned": true,
+    "train_test_trajectory_overlap_count": 0,
+    "train_rows": 1920,
+    "test_rows": 480,
+    "train_trajectories": 320,
+    "test_trajectories": 80
+  },
+  "classifier": "HistGradientBoostingClassifier",
+  "classifier_config": {
+    "learning_rate": 0.05,
+    "max_iter": 200,
+    "max_leaf_nodes": 15,
+    "l2_regularization": 1.0,
+    "random_state": 42
+  },
+  "class_id_to_name": {
+    "0": "SAFE",
+    "1": "EARLY_RISK",
+    "2": "VIOLATION"
+  },
+  "train_label_counts": {
+    "SAFE": 480,
+    "EARLY_RISK": 1280,
+    "VIOLATION": 160
+  },
+  "test_label_counts": {
+    "SAFE": 120,
+    "EARLY_RISK": 320,
+    "VIOLATION": 40
+  },
+  "all_provenance_features_detected": [
+    "has_provenance",
+    "has_sensitive_ancestor",
+    "max_ancestor_sensitivity_encoded",
+    "provenance_depth",
+    "sensitive_ancestor_count",
+    "transformation_depth"
+  ],
+  "excluded_feature_names": [
+    "label",
+    "label_encoded",
+    "scenario_id",
+    "sensitivity",
+    "source_dataset",
+    "step_number",
+    "tool_name",
+    "total_steps",
+    "trajectory_id",
+    "trajectory_progress",
+    "transformation"
+  ],
+  "feature_sets": {
+    "baseline_without_provenance": [
+      "has_input_object",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_encoded"
+    ],
+    "full_provenance": [
+      "has_input_object",
+      "has_provenance",
+      "has_sensitive_ancestor",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "max_ancestor_sensitivity_encoded",
+      "provenance_depth",
+      "sensitive_ancestor_count",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_depth",
+      "transformation_encoded"
+    ],
+    "drop_has_sensitive_ancestor": [
+      "has_input_object",
+      "has_provenance",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "max_ancestor_sensitivity_encoded",
+      "provenance_depth",
+      "sensitive_ancestor_count",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_depth",
+      "transformation_encoded"
+    ],
+    "drop_sensitive_ancestor_count": [
+      "has_input_object",
+      "has_provenance",
+      "has_sensitive_ancestor",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "max_ancestor_sensitivity_encoded",
+      "provenance_depth",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_depth",
+      "transformation_encoded"
+    ],
+    "drop_both_sensitive_ancestor_features": [
+      "has_input_object",
+      "has_provenance",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "max_ancestor_sensitivity_encoded",
+      "provenance_depth",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_depth",
+      "transformation_encoded"
+    ],
+    "drop_ancestor_sensitivity_group": [
+      "has_input_object",
+      "has_provenance",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "provenance_depth",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_depth",
+      "transformation_encoded"
+    ],
+    "drop_provenance_structure_group": [
+      "has_input_object",
+      "has_sensitive_ancestor",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "max_ancestor_sensitivity_encoded",
+      "sensitive_ancestor_count",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_encoded"
+    ],
+    "drop_all_provenance": [
+      "has_input_object",
+      "is_external_action",
+      "is_memory_operation",
+      "is_transformation",
+      "sensitivity_encoded",
+      "tool_encoded",
+      "transformation_encoded"
+    ]
+  },
+  "feature_label_shortcut_audit_on_training_data": {
+    "has_input_object": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "1": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 1280
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "has_provenance": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "1": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 1280
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "has_sensitive_ancestor": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "1": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 640,
+            "1": 640
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "is_external_action": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "1": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 1280
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "is_memory_operation": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 480
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 640,
+            "1": 640
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "is_transformation": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 480
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 640,
+            "1": 640
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "max_ancestor_sensitivity_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "2": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 640,
+            "2": 640
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "2": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "provenance_depth": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "5": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 320,
+            "2": 320,
+            "3": 320,
+            "4": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "sensitive_ancestor_count": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "1": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 5,
+          "value_counts": {
+            "0": 640,
+            "2": 160,
+            "3": 160,
+            "4": 160,
+            "5": 160
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "6": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "VIOLATION"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "sensitivity_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "2": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 1280
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "tool_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "5": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 320,
+            "2": 320,
+            "3": 320,
+            "4": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "transformation_depth": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "5": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 320,
+            "2": 320,
+            "3": 320,
+            "4": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "transformation_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 480,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 320,
+            "5": 160
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 1280,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 320,
+            "2": 320,
+            "3": 320,
+            "4": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 160,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 160
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    }
+  },
+  "feature_label_shortcut_audit_on_test_data": {
+    "has_input_object": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "1": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "has_provenance": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "1": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "has_sensitive_ancestor": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "1": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 160,
+            "1": 160
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "is_external_action": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "1": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "1": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "is_memory_operation": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 120
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 160,
+            "1": 160
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "is_transformation": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 120
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 160,
+            "1": 160
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "max_ancestor_sensitivity_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "2": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 160,
+            "2": 160
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "2": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "provenance_depth": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "5": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 80,
+            "2": 80,
+            "3": 80,
+            "4": 80
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "sensitive_ancestor_count": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "1": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 5,
+          "value_counts": {
+            "0": 160,
+            "2": 40,
+            "3": 40,
+            "4": 40,
+            "5": 40
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "6": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "VIOLATION"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "sensitivity_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "2": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 320
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "0": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [],
+      "possible_shortcut_warning": false
+    },
+    "tool_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "5": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 80,
+            "2": 80,
+            "3": 80,
+            "4": 80
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "transformation_depth": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "5": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 80,
+            "2": 80,
+            "3": 80,
+            "4": 80
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    },
+    "transformation_encoded": {
+      "by_class": {
+        "SAFE": {
+          "rows": 120,
+          "unique_values": 2,
+          "value_counts": {
+            "0": 80,
+            "5": 40
+          }
+        },
+        "EARLY_RISK": {
+          "rows": 320,
+          "unique_values": 4,
+          "value_counts": {
+            "1": 80,
+            "2": 80,
+            "3": 80,
+            "4": 80
+          }
+        },
+        "VIOLATION": {
+          "rows": 40,
+          "unique_values": 1,
+          "value_counts": {
+            "5": 40
+          }
+        }
+      },
+      "disjoint_value_set_class_pairs": [
+        [
+          "SAFE",
+          "EARLY_RISK"
+        ],
+        [
+          "EARLY_RISK",
+          "VIOLATION"
+        ]
+      ],
+      "possible_shortcut_warning": true
+    }
+  },
+  "warning": "Feature-label distribution warnings indicate possible shortcuts, not proof of causal leakage. The benchmark is synthetic/controlled; scores are not real-world security guarantees."
+}
