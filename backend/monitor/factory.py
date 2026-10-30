@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from backend.monitor.executor import ToolExecutor
 from backend.monitor.monitor import SentinelMonitor
 from backend.monitor.output_handler import OutputDataObjectHandler
@@ -34,6 +36,8 @@ class SentinelRuntime:
 
 def create_sentinel_runtime(
     policy_path: str = "policies/default.yaml",
+    file_root: str | Path | None = None,
+    memory_path: str | Path | None = None,
 ) -> SentinelRuntime:
     """
     Create a fully configured SentinelAI runtime.
@@ -47,7 +51,10 @@ def create_sentinel_runtime(
 
     risk_scorer = HeuristicRiskScorer()
 
-    tool_executor = create_tool_executor()
+    tool_executor = create_tool_executor(
+        file_root=file_root,
+        memory_path=memory_path,
+    )
 
     runtime_executor = RuntimeExecutor(
         trajectory_store=trajectory_store,

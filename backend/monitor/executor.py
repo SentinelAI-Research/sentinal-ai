@@ -7,6 +7,8 @@ registered tools only
 
 This gives us controlled execution boundary
 """
+
+
 class ToolExecutor:
     def __init__(self):
         self._tools: dict[str, Callable] = {}
@@ -32,3 +34,7 @@ class ToolExecutor:
         tool = self._tools[tool_name]
 
         return tool(**arguments)
+
+    def has_tool(self, name: str) -> bool:
+        """Return whether a tool is registered for monitored execution."""
+        return name in self._tools

@@ -6,3 +6,4 @@ pytest
 datasets
 scikit-learn
 joblib
+openai>=1.30,<3

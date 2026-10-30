@@ -8,6 +8,8 @@ def read_file(path: str) -> str:
     This is a real file operation. SentinelAI will later
     record the resulting content as a DataObject.
     """
+    if not isinstance(path, str) or not path.strip():
+        raise ValueError("File path cannot be empty.")
 
     file_path = Path(path)
 
@@ -27,8 +29,7 @@ def summarize(text: str, max_sentences: int = 3) -> str:
     This is intentionally deterministic so that the transformation
     is reproducible during experiments.
     """
-
-    if not text.strip():
+    if not isinstance(text, str) or not text.strip():
         return ""
 
     sentences = [
@@ -49,8 +50,7 @@ def paraphrase(text: str) -> str:
     This is a baseline transformation that will later allow
     SentinelAI to track information across transformed objects.
     """
-
-    if not text.strip():
+    if not isinstance(text, str) or not text.strip():
         return ""
 
     replacements = {
@@ -65,10 +65,7 @@ def paraphrase(text: str) -> str:
     result = text
 
     for original, replacement in replacements.items():
-        result = result.replace(
-            f" {original} ",
-            f" {replacement} "
-        )
+        result = result.replace(f" {original} ", f" {replacement} ")
 
     return result
 
@@ -79,11 +76,10 @@ def calculate(expression: str) -> float:
 
     Only numeric arithmetic is supported.
     """
+    if not isinstance(expression, str) or not expression.strip():
+        raise ValueError("Expression cannot be empty.")
 
     allowed_characters = set("0123456789+-*/(). ")
-
-    if not expression.strip():
-        raise ValueError("Expression cannot be empty.")
 
     if not set(expression).issubset(allowed_characters):
         raise ValueError("Expression contains unsupported characters.")

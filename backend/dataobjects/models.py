@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from backend.dataobjects.sensitivity import SensitivityLabel
+
 
 class DataObject(BaseModel):
     """
@@ -18,7 +20,7 @@ class DataObject(BaseModel):
 
     object_id: str
     source: str
-    sensitivity: str
+    sensitivity: SensitivityLabel
 
     parents: list[str] = Field(default_factory=list)
 
@@ -28,8 +30,6 @@ class DataObject(BaseModel):
 
     embedding_ref: Optional[str] = None
 
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     created_step: Optional[str] = None

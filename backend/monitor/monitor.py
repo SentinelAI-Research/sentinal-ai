@@ -3,6 +3,7 @@ from backend.risk.heuristic import HeuristicRiskScorer
 from backend.provenance.graph import ProvenanceGraph
 from backend.trajectory.store import TrajectoryStore
 from backend.trajectory.models import TrajectoryStep
+from backend.dataobjects.sensitivity import most_sensitive_sensitivity
 from backend.schemas.contracts import ToolCallProposal, Decision
 
 
@@ -58,6 +59,39 @@ class SentinelMonitor:
         if not proposal.input_data_objects:
             raise ValueError(f"Proposal {proposal.step_id} has no input data objects.")
 
+        output_object_id = f"{proposal.step_id}-output"
+        if self.provenance_graph.has_object(output_object_id):
+            raise ValueError(f"Data object already exists: {output_object_id}")
+
+        input_objects = self.provenance_graph.resolve_objects(
+            proposal.input_data_objects
+        )
+        sensitivities = [data_object.sensitivity for data_object in input_objects]
+        most_sensitive_sensitivity(sensitivities)
+
+        policy_results = [
+            self.policy_engine.evaluate_action(
+                source_sensitivity=sensitivity,
+                destination=destination,
+            )
+            for sensitivity in sensitivities
+        ]
+        policy_result = self.policy_engine.combine_evaluations(policy_results)
+
+        provenance_depth = max(
+            self.provenance_graph.get_depth(object_id)
+            for object_id in proposal.input_data_objects
+        )
+        provenance_trace = list(dict.fromkeys(proposal.input_data_objects))
+        for object_id in proposal.input_data_objects:
+            provenance_trace.extend(
+                ancestor_id
+                for ancestor_id in sorted(
+                    self.provenance_graph.get_ancestors(object_id)
+                )
+                if ancestor_id not in provenance_trace
+            )
+
         # ---------------------------------------------------------
         # 2. Determine the session ID
         #
@@ -85,29 +119,6 @@ class SentinelMonitor:
         self.trajectory_store.add_step(step)
 
         # ---------------------------------------------------------
-        # 4. Identify the input data object
-        # ---------------------------------------------------------
-
-        input_object_id = proposal.input_data_objects[-1]
-
-        data_object = self.provenance_graph.get_object(input_object_id)
-
-        # ---------------------------------------------------------
-        # 5. Evaluate security policy
-        # ---------------------------------------------------------
-
-        policy_result = self.policy_engine.evaluate_action(
-            source_sensitivity=data_object.sensitivity,
-            destination=destination,
-        )
-
-        # ---------------------------------------------------------
-        # 6. Calculate provenance depth
-        # ---------------------------------------------------------
-
-        provenance_depth = self.provenance_graph.get_depth(input_object_id)
-
-        # ---------------------------------------------------------
         # 7. Retrieve previous trajectory history
         # ---------------------------------------------------------
 
@@ -126,17 +137,6 @@ class SentinelMonitor:
             provenance_depth=provenance_depth,
             destination=destination,
         )
-
-        # ---------------------------------------------------------
-        # 9. Build provenance trace
-        # ---------------------------------------------------------
-
-        ancestors = self.provenance_graph.get_ancestors(input_object_id)
-
-        provenance_trace = [
-            input_object_id,
-            *ancestors,
-        ]
 
         # ---------------------------------------------------------
         # 10. Create final security decision

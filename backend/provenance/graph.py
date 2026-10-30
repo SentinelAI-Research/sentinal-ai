@@ -17,7 +17,7 @@ class ProvenanceGraph:
           summary_001
             │
             ▼
-          paraphrase_001, 
+          paraphrase_001,
 
     Graph will store : file_001 → summary_001
                        summary_001 → paraphrase_001
@@ -31,10 +31,24 @@ class ProvenanceGraph:
         Add a DataObject to the provenance graph.
         """
 
+        if data_object.object_id in self.graph:
+            raise ValueError(f"Data object already exists: {data_object.object_id}")
+
         self.graph.add_node(
             data_object.object_id,
             data_object=data_object,
         )
+
+    def has_object(self, object_id: str) -> bool:
+        """Return whether an object ID is already registered."""
+        return object_id in self.graph
+
+    def resolve_objects(self, object_ids: list[str]) -> list[DataObject]:
+        """Validate unique IDs and resolve every object before graph mutation."""
+        if len(object_ids) != len(set(object_ids)):
+            raise ValueError("Duplicate input DataObject IDs are not allowed.")
+
+        return [self.get_object(object_id) for object_id in object_ids]
 
     def add_relationship(
         self,
@@ -109,8 +123,7 @@ class ProvenanceGraph:
             )
         except nx.NetworkXNoPath as exc:
             raise ValueError(
-                f"No provenance path exists from {source_id} "
-                f"to {target_id}"
+                f"No provenance path exists from {source_id} " f"to {target_id}"
             ) from exc
 
     def get_depth(self, object_id: str) -> int:
@@ -135,7 +148,7 @@ class ProvenanceGraph:
             except nx.NetworkXNoPath:
                 continue
 
-        return max_depth  
+        return max_depth
 
     def get_transformation_depth(self, object_id: str) -> int:
         if object_id not in self.graph:
@@ -154,7 +167,7 @@ class ProvenanceGraph:
             if ancestor.transformation:
                 transformation_count += 1
 
-        return transformation_count  
+        return transformation_count
 
     def get_object(self, object_id: str) -> DataObject:
         if object_id not in self.graph:
