@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SentinelAI | Research Dashboard</title>
+  <title>SentinelAI</title>
+  <link rel="icon" type="image/png" href="./sentinel-ai-transparent-bg.png" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 
@@ -12,10 +13,12 @@
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand" href="#overview" aria-label="SentinelAI overview">
-        <div class="brand-mark">S</div>
+        <div class="brand-mark-wrapper">
+          <img src="./sentinel-ai-logo.PNG" alt="SentinelAI Logo" class="brand-logo-img" width="50px"
+            style="border-radius: 0.3rem;" />
+        </div>
         <div>
           <div class="brand-name">SentinelAI</div>
-          <div class="brand-caption">Research Lab</div>
         </div>
       </a>
 
@@ -61,21 +64,34 @@
           </span>
         </button>
 
-        <div class="nav-group-label">WHAT'S NEXT</div>
+        <button class="nav-item" data-page="experiment-5">
+          <span class="nav-number">05</span>
+          <span class="nav-copy">
+            <strong>V4 Zero-Shot Templates</strong>
+            <small>Generalization Proof</small>
+          </span>
+        </button>
 
-        <button class="nav-item" data-page="roadmap">
-          <span class="nav-icon">↗</span>
-          <span>V4 Research Roadmap</span>
+        <div class="nav-group-label">LIVE DEMO</div>
+
+        <button class="nav-item" data-page="agent-lab">
+          <span class="nav-icon">◎</span>
+          <span>Agent Lab</span>
+        </button>
+
+        <button class="nav-item" data-page="llm-lab">
+          <span class="nav-icon">◇</span>
+          <span>LLM Lab</span>
         </button>
       </nav>
 
-      <div class="sidebar-footer">
+      <!-- <div class="sidebar-footer">
         <div class="status-dot"></div>
         <div>
           <strong>Research mode</strong>
           <small>Controlled synthetic benchmark</small>
         </div>
-      </div>
+      </div> -->
     </aside>
 
     <main class="main-panel">
@@ -84,24 +100,24 @@
           <div class="breadcrumb">SentinelAI <span>/</span> <span id="breadcrumb-current">Overview</span></div>
           <div class="topbar-title" id="topbar-title">Research Overview</div>
         </div>
-        <div class="topbar-right">
+        <!-- <div class="topbar-right">
           <span class="environment-tag"><span class="status-dot"></span> Local dashboard</span>
-        </div>
+        </div> -->
       </header>
 
       <div id="page-content" class="page-content" aria-live="polite">
         <section class="hero">
           <div class="eyebrow">PROJECT OVERVIEW</div>
           <h1>Understanding runtime risk in autonomous AI agents.</h1>
-          <p>Explore each research stage separately, from the initial benchmark to the current provenance-aware
+          <p>Explore each research stage separately, from the initial benchmark to the current zero-shot template
             evaluation.</p>
         </section>
       </div>
 
-      <footer class="page-footer">
+      <!-- <footer class="page-footer">
         <span>SentinelAI · Research dashboard</span>
-        <span>Results are from controlled synthetic experiments unless stated otherwise.</span>
-      </footer>
+        <span>Results are from live real-time API metrics unless stated otherwise.</span>
+      </footer> -->
     </main>
   </div>
 

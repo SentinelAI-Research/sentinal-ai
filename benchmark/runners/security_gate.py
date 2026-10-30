@@ -1,6 +1,7 @@
 from backend.policy.engine import PolicyEngine
 from backend.risk.heuristic import HeuristicRiskScorer
 from backend.trajectory.models import TrajectoryStep
+from backend.dataobjects.sensitivity import most_sensitive_sensitivity
 
 """
 Creating boundary between trajectory and policy engine : 
@@ -30,16 +31,23 @@ class SecurityGate:
         if not step.input_data_objects:
             raise ValueError(f"Step {step.step_id} has no input data objects.")
 
-        input_object_id = step.input_data_objects[-1]
-
-        data_object = provenance_graph.get_object(input_object_id)
-
-        policy_result = self.policy_engine.evaluate_action(
-            source_sensitivity=data_object.sensitivity,
-            destination=destination,
+        input_objects = provenance_graph.resolve_objects(step.input_data_objects)
+        most_sensitive_sensitivity(
+            [data_object.sensitivity for data_object in input_objects]
         )
+        policy_results = [
+            self.policy_engine.evaluate_action(
+                source_sensitivity=data_object.sensitivity,
+                destination=destination,
+            )
+            for data_object in input_objects
+        ]
+        policy_result = self.policy_engine.combine_evaluations(policy_results)
 
-        provenance_depth = provenance_graph.get_depth(input_object_id)
+        provenance_depth = max(
+            provenance_graph.get_depth(object_id)
+            for object_id in step.input_data_objects
+        )
 
         risk_result = self.risk_scorer.assess(
             policy_result=policy_result,

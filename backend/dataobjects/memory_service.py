@@ -1,5 +1,6 @@
 from backend.dataobjects.factory import create_data_object
 from backend.dataobjects.models import DataObject
+from backend.dataobjects.sensitivity import most_sensitive_sensitivity
 from backend.provenance.graph import ProvenanceGraph
 
 
@@ -36,11 +37,18 @@ class MemoryDataObjectService:
         if not parent_object_ids:
             raise ValueError("Memory object must have at least one parent.")
 
+        parent_objects = self.provenance_graph.resolve_objects(parent_object_ids)
+        object_sensitivity = most_sensitive_sensitivity(
+            [parent.sensitivity for parent in parent_objects] + [sensitivity]
+        )
+        if self.provenance_graph.has_object(object_id):
+            raise ValueError(f"Data object already exists: {object_id}")
+
         data_object = create_data_object(
             object_id=object_id,
             source="memory",
             content=content,
-            sensitivity=sensitivity,
+            sensitivity=object_sensitivity,
             transformation="write_memory",
             parents=parent_object_ids,
             created_step=created_step,
@@ -72,11 +80,18 @@ class MemoryDataObjectService:
         if not content:
             raise ValueError("Retrieved memory content cannot be empty.")
 
+        memory_object = self.provenance_graph.get_object(memory_object_id)
+        object_sensitivity = most_sensitive_sensitivity(
+            [memory_object.sensitivity, sensitivity]
+        )
+        if self.provenance_graph.has_object(object_id):
+            raise ValueError(f"Data object already exists: {object_id}")
+
         data_object = create_data_object(
             object_id=object_id,
             source="memory",
             content=content,
-            sensitivity=sensitivity,
+            sensitivity=object_sensitivity,
             transformation="read_memory",
             parents=[memory_object_id],
             created_step=created_step,

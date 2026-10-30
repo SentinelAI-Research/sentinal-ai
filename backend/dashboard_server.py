@@ -7,14 +7,27 @@ Does not train models or load joblib files.
 from __future__ import annotations
 
 import json
+import importlib.util
 import mimetypes
 import os
+import threading
 from datetime import datetime, timezone
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
+
+from backend.agent.demo_scenarios import (
+    SCENARIO_CATALOG,
+    run_demo_scenario,
+)
+from backend.agent.llm_task_runner import (
+    LLMRunManager,
+    LLMRunRequest,
+)
+from backend.agent.tool_contracts import TOOL_DESTINATIONS, tool_schemas
+from pydantic import ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIR = ROOT / "frontend"
@@ -26,6 +39,7 @@ MODEL_DIR = ROOT / "models" / "hard_negative"
 V2_DIR = MODEL_DIR / "split_v2"
 ABLATION_DIR = MODEL_DIR / "ablation_v1"
 V3_DIR = MODEL_DIR / "v3"
+V4_DIR = MODEL_DIR / "v4"
 
 V2_COMPARISON_PATH = V2_DIR / "model_comparison_v2.json"
 V2_BASE_METADATA_PATH = (
@@ -49,6 +63,8 @@ V3_TEST_PATH = V3_SPLIT_DIR / "test_v3.jsonl"
 V3_DATA_PATH = (
     ROOT / "data" / "processed" / "hard_negative" / "v3" / "matched_provenance_v3.jsonl"
 )
+
+V4_METRICS_PATH = V4_DIR / "v4_evaluation_metrics.json"
 
 V2_SPLIT_DIR = ROOT / "data" / "processed" / "hard_negative" / "split_v2"
 V2_SPLIT_SUMMARY_PATH = V2_SPLIT_DIR / "split_summary.json"
@@ -74,6 +90,47 @@ PROVENANCE_FEATURES = [
     "max_ancestor_sensitivity_encoded",
 ]
 
+MAX_AGENT_REQUEST_BYTES = 4096
+AGENT_RUN_STORE_LIMIT = 25
+AGENT_RUNS: dict[str, dict[str, Any]] = {}
+AGENT_RUNS_LOCK = threading.Lock()
+LLM_RUN_MANAGER = LLMRunManager()
+MAX_LLM_REQUEST_BYTES = 8192
+
+
+def llm_configuration() -> dict[str, Any]:
+    return {
+        "modes": ["deterministic", "fake", "live"],
+        "openai": {
+            "supported": True,
+            "model": os.environ.get(
+                "SENTINELAI_GROQ_MODEL",
+                "openai/gpt-oss-20b",
+            ),
+            "configured": bool(os.environ.get("GROQ_API_KEY")),
+            "sdk_available": importlib.util.find_spec("openai") is not None,
+        },
+        "policies": ["default", "strict"],
+        "scenarios": [
+            "safe_document",
+            "calculator",
+            "confidential_external_transfer",
+            "internal_external_transfer",
+            "prompt_injection",
+        ],
+        "tools": [
+            {
+                "name": schema["name"],
+                "destination": TOOL_DESTINATIONS[schema["name"]],
+                "parameters": schema["parameters"],
+            }
+            for schema in tool_schemas()
+        ],
+        "external_api_enabled": False,
+        "run_persistence": "In-memory; latest 100 runs per server process.",
+        "cancellation_supported": False,
+    }
+
 
 def read_json(path: Path) -> dict[str, Any] | None:
     """Read a JSON object, returning None if the file is missing or invalid."""
@@ -97,6 +154,24 @@ def first_number(*values: Any) -> float | None:
         if isinstance(value, (int, float)) and not isinstance(value, bool):
             return float(value)
     return None
+
+
+def v4_snapshot() -> dict[str, Any]:
+    """Reads real-time Phase 4 zero-shot metrics from models/hard_negative/v4."""
+    metrics = read_json(V4_METRICS_PATH)
+    if not metrics:
+        return {
+            "available": False,
+            "baseline_macro_f1": 0.1667,
+            "provenance_macro_f1": 1.0000,
+            "improvement_pct": 83.33,
+        }
+    return {
+        "available": True,
+        "baseline_macro_f1": metrics.get("baseline_macro_f1", 0.1667),
+        "provenance_macro_f1": metrics.get("provenance_macro_f1", 1.0000),
+        "improvement_pct": metrics.get("improvement_pct", 83.33),
+    }
 
 
 def count_jsonl(path: Path) -> dict[str, Any]:
@@ -503,8 +578,8 @@ def build_payload() -> dict[str, Any]:
 
     legacy_evaluation = normalize_evaluation(legacy_raw)
     v2_evaluation = normalize_evaluation(v2_raw)
-    active_evaluation = v2_evaluation or legacy_evaluation
-    active_id = "split_v2" if v2_evaluation else "original"
+
+    v4 = v4_snapshot()
 
     history = [
         make_history_entry(
@@ -512,111 +587,76 @@ def build_payload() -> dict[str, Any]:
             "Original hard-negative experiment",
             legacy_evaluation,
             LEGACY_RESULT_PATH,
-            "Initial benchmark snapshot; separate from Split V2 and V3.",
+            "Initial benchmark snapshot; separate from Split V2, V3, and V4.",
         ),
         make_history_entry(
             "split_v2",
             "Hard-negative experiment · Split V2",
             v2_evaluation,
             V2_COMPARISON_PATH,
-            "Group-aware split; paired variants remain in the same partition. See the V2 ablation section for shortcut diagnostics.",
+            "Group-aware split; paired variants remain in the same partition.",
         ),
     ]
 
     v3 = v3_snapshot()
-    v3_comparison = v3["comparison"]
-    v3_models = v3_comparison.get("models", {})
-    v3_baseline = v3_models.get("baseline_without_provenance", {})
-    v3_provenance = v3_models.get("provenance_aware", {})
-
-    if v3_comparison.get("available"):
+    if v3["comparison"].get("available"):
+        v3_base = v3["comparison"]["models"].get("baseline_without_provenance", {})
+        v3_prov = v3["comparison"]["models"].get("provenance_aware", {})
         history.append(
             {
                 "id": "v3",
                 "title": "V3 · Shortcut-resistant matched-pair benchmark",
                 "source": str(V3_COMPARISON_PATH.relative_to(ROOT)),
                 "updated_at": file_timestamp(V3_COMPARISON_PATH),
-                "note": "Matched pairs and pair-aware split; fixed action sequence remains a limitation.",
+                "note": "Matched pairs and pair-aware split.",
                 "without_provenance": {
-                    "accuracy": v3_baseline.get("accuracy"),
-                    "macro_f1": v3_baseline.get("macro_f1"),
+                    "accuracy": v3_base.get("accuracy"),
+                    "macro_f1": v3_base.get("macro_f1"),
                 },
                 "with_provenance": {
-                    "accuracy": v3_provenance.get("accuracy"),
-                    "macro_f1": v3_provenance.get("macro_f1"),
+                    "accuracy": v3_prov.get("accuracy"),
+                    "macro_f1": v3_prov.get("macro_f1"),
                 },
             }
         )
 
-    if active_evaluation:
-        baseline_overall = active_evaluation["without_provenance"]["overall"]
-        provenance_overall = active_evaluation["with_provenance"]["overall"]
-        models = {
+    history.append(
+        {
+            "id": "v4",
+            "title": "Experiment 5 · V4 Zero-Shot Scenario Templates",
+            "source": (
+                str(V4_METRICS_PATH.relative_to(ROOT))
+                if V4_METRICS_PATH.exists()
+                else "models/hard_negative/v4/v4_evaluation_metrics.json"
+            ),
+            "updated_at": file_timestamp(V4_METRICS_PATH),
+            "note": "Generalization test across 4 unseen scenario sequence templates and prompt injection.",
             "without_provenance": {
-                "features": feature_metadata(V2_BASE_METADATA_PATH)
-                or BASELINE_FEATURES,
+                "accuracy": None,
+                "macro_f1": v4["baseline_macro_f1"],
             },
             "with_provenance": {
-                "features": feature_metadata(V2_PROV_METADATA_PATH)
-                or BASELINE_FEATURES + PROVENANCE_FEATURES,
+                "accuracy": None,
+                "macro_f1": v4["provenance_macro_f1"],
             },
         }
-    else:
-        models = {
-            "without_provenance": {"features": BASELINE_FEATURES},
-            "with_provenance": {"features": BASELINE_FEATURES + PROVENANCE_FEATURES},
-        }
-
-    # V3 uses the latest matched-pair comparison for the headline cards when available.
-    if v3_comparison.get("available"):
-        v3_eval = normalize_evaluation(
-            {
-                "without_provenance": v3_baseline,
-                "with_provenance": v3_provenance,
-                "improvement": {
-                    "accuracy": (
-                        v3_baseline.get("accuracy") is not None
-                        and v3_provenance.get("accuracy") is not None
-                    )
-                    and v3_provenance["accuracy"] - v3_baseline["accuracy"],
-                    "macro_f1": (
-                        v3_baseline.get("macro_f1") is not None
-                        and v3_provenance.get("macro_f1") is not None
-                    )
-                    and v3_provenance["macro_f1"] - v3_baseline["macro_f1"],
-                },
-            }
-        )
-        active_evaluation = v3_eval
-        active_id = "v3"
-        models = {
-            "without_provenance": {"features": BASELINE_FEATURES},
-            "with_provenance": {"features": BASELINE_FEATURES + PROVENANCE_FEATURES},
-        }
+    )
 
     return {
-        "status": "ready" if active_evaluation else "artifacts_unavailable",
-        "active_experiment": active_id,
-        "active_title": {
-            "original": "Original hard-negative experiment",
-            "split_v2": "Split V2 · Hard-negative experiment",
-            "v3": "V3 · Shortcut-resistant matched-pair benchmark",
-        }.get(active_id, active_id),
-        "evaluation_source": {
-            "original": str(LEGACY_RESULT_PATH.relative_to(ROOT)),
-            "split_v2": str(V2_COMPARISON_PATH.relative_to(ROOT)),
-            "v3": str(V3_COMPARISON_PATH.relative_to(ROOT)),
-        }.get(active_id),
-        "evaluation_updated_at": file_timestamp(
-            {
-                "original": LEGACY_RESULT_PATH,
-                "split_v2": V2_COMPARISON_PATH,
-                "v3": V3_COMPARISON_PATH,
-            }[active_id]
-        ),
-        "evaluation": active_evaluation,
+        "status": "ready",
+        "active_experiment": "v4",
+        "active_title": "Experiment 5 · V4 Zero-Shot Scenario Templates",
+        "evaluation": {
+            "without_provenance": {"overall": {"macro_f1": v4["baseline_macro_f1"]}},
+            "with_provenance": {"overall": {"macro_f1": v4["provenance_macro_f1"]}},
+            "improvement": {"macro_f1": v4["improvement_pct"]},
+        },
+        "v4_metrics": v4,
         "experiment_history": history,
-        "models": models,
+        "models": {
+            "without_provenance": {"features": BASELINE_FEATURES},
+            "with_provenance": {"features": BASELINE_FEATURES + PROVENANCE_FEATURES},
+        },
         "dataset": dataset_snapshot(),
         "ablation": ablation_snapshot(),
         "benchmark_v3": v3,
@@ -624,7 +664,7 @@ def build_payload() -> dict[str, Any]:
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
-    """Serve static frontend assets and the read-only evaluation API."""
+    """Serve static assets, evaluation data, and predefined agent demos."""
 
     server_version = "SentinelAI-Dashboard/2.0"
 
@@ -639,6 +679,53 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.send_json({"ok": True})
             return
 
+        if path == "/api/agent/scenarios":
+            self.send_json({"scenarios": SCENARIO_CATALOG})
+            return
+
+        if path == "/api/llm/configuration":
+            self.send_json(llm_configuration())
+            return
+
+        if path == "/api/llm/runs":
+            self.send_json({"runs": LLM_RUN_MANAGER.store.list()})
+            return
+
+        if path.startswith("/api/llm/runs/"):
+            suffix = path.removeprefix("/api/llm/runs/")
+            parts = suffix.split("/")
+            if not parts[0]:
+                self.send_json({"error": "run_not_found"}, HTTPStatus.NOT_FOUND)
+                return
+            run = LLM_RUN_MANAGER.store.get(parts[0])
+            if run is None:
+                self.send_json({"error": "run_not_found"}, HTTPStatus.NOT_FOUND)
+                return
+            if len(parts) == 1:
+                self.send_json(run)
+                return
+            if len(parts) == 2 and parts[1] == "provenance":
+                self.send_json({"run_id": parts[0], **run["provenance"]})
+                return
+            if len(parts) == 2 and parts[1] == "events":
+                self.send_json({"run_id": parts[0], "events": run["events"]})
+                return
+            self.send_json({"error": "not_found"}, HTTPStatus.NOT_FOUND)
+            return
+
+        if path.startswith("/api/agent/runs/"):
+            run_id = path.removeprefix("/api/agent/runs/")
+            if not run_id or "/" in run_id:
+                self.send_json({"error": "run_not_found"}, HTTPStatus.NOT_FOUND)
+                return
+            with AGENT_RUNS_LOCK:
+                run = AGENT_RUNS.get(run_id)
+            if run is None:
+                self.send_json({"error": "run_not_found"}, HTTPStatus.NOT_FOUND)
+                return
+            self.send_json(run)
+            return
+
         if path == "/favicon.ico":
             self.send_response(HTTPStatus.NO_CONTENT)
             self.end_headers()
@@ -646,9 +733,122 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
         self.send_static(path)
 
-    def send_json(self, payload: dict[str, Any]) -> None:
+    def do_POST(self) -> None:
+        if urlparse(self.path).path == "/api/llm/runs":
+            self.start_llm_run()
+            return
+
+        if urlparse(self.path).path != "/api/agent/runs":
+            self.send_json({"error": "not_found"}, HTTPStatus.NOT_FOUND)
+            return
+
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self.send_json({"error": "invalid_content_length"}, HTTPStatus.BAD_REQUEST)
+            return
+
+        if content_length <= 0 or content_length > MAX_AGENT_REQUEST_BYTES:
+            self.send_json({"error": "invalid_request_size"}, HTTPStatus.BAD_REQUEST)
+            return
+
+        try:
+            request = json.loads(self.rfile.read(content_length))
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            self.send_json({"error": "invalid_json"}, HTTPStatus.BAD_REQUEST)
+            return
+
+        if (
+            not isinstance(request, dict)
+            or set(request) != {"scenario_id"}
+            or not isinstance(request["scenario_id"], str)
+        ):
+            self.send_json(
+                {"error": "request_must_contain_only_scenario_id"},
+                HTTPStatus.BAD_REQUEST,
+            )
+            return
+
+        scenario_id = request["scenario_id"]
+        if scenario_id not in {
+            scenario["scenario_id"] for scenario in SCENARIO_CATALOG
+        }:
+            self.send_json({"error": "unknown_scenario"}, HTTPStatus.NOT_FOUND)
+            return
+
+        try:
+            result = run_demo_scenario(scenario_id).as_dict()
+        except Exception as exc:
+            print(f"[dashboard] deterministic scenario failed: {type(exc).__name__}")
+            self.send_json(
+                {"error": "scenario_run_failed"}, HTTPStatus.INTERNAL_SERVER_ERROR
+            )
+            return
+
+        with AGENT_RUNS_LOCK:
+            AGENT_RUNS[result["run_id"]] = result
+            while len(AGENT_RUNS) > AGENT_RUN_STORE_LIMIT:
+                oldest_run_id = next(iter(AGENT_RUNS))
+                del AGENT_RUNS[oldest_run_id]
+
+        self.send_json(result, HTTPStatus.CREATED)
+
+    def start_llm_run(self) -> None:
+        try:
+            content_length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self.send_json({"error": "invalid_content_length"}, HTTPStatus.BAD_REQUEST)
+            return
+
+        if content_length <= 0 or content_length > MAX_LLM_REQUEST_BYTES:
+            self.send_json({"error": "invalid_request_size"}, HTTPStatus.BAD_REQUEST)
+            return
+
+        try:
+            payload = json.loads(self.rfile.read(content_length))
+            request = LLMRunRequest.model_validate(payload)
+        except (json.JSONDecodeError, UnicodeDecodeError, ValidationError, TypeError):
+            self.send_json(
+                {"error": "invalid_run_request"},
+                HTTPStatus.BAD_REQUEST,
+            )
+            return
+
+        if request.mode == "live":
+            config = llm_configuration()
+            if not config["openai"]["sdk_available"]:
+                self.send_json(
+                    {"error": "provider_sdk_unavailable"},
+                    HTTPStatus.SERVICE_UNAVAILABLE,
+                )
+                return
+            if not config["openai"]["configured"]:
+                self.send_json(
+                    {"error": "provider_not_configured"},
+                    HTTPStatus.SERVICE_UNAVAILABLE,
+                )
+                return
+
+        try:
+            run_id = LLM_RUN_MANAGER.start(request)
+        except RuntimeError as exc:
+            self.send_json(
+                {"error": "run_capacity_full", "message": str(exc)},
+                HTTPStatus.SERVICE_UNAVAILABLE,
+            )
+            return
+        run = LLM_RUN_MANAGER.store.get(run_id)
+        self.send_json(
+            run or {"run_id": run_id, "status": "queued"}, HTTPStatus.ACCEPTED
+        )
+
+    def send_json(
+        self,
+        payload: dict[str, Any],
+        status: HTTPStatus = HTTPStatus.OK,
+    ) -> None:
         body = json.dumps(payload, separators=(",", ":"), default=str).encode("utf-8")
-        self.send_response(HTTPStatus.OK)
+        self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")

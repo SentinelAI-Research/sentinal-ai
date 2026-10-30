@@ -1051,3 +1051,70 @@ Increase:
 - experiment automation
 
 Evaluate whether the architecture continues to operate efficiently.
+
+## Phase 1B — Deterministic Agent Lab
+
+The dashboard includes a deterministic scripted planner and two predefined
+scenarios. Every planned action is submitted through the existing
+`MonitorService`; the planner cannot invoke tool functions directly. The safe
+scenario reads `data/sample/test.txt`, summarizes it, and creates a derived
+draft. The security scenario proposes a simulated external message from a
+synthetic confidential DataObject and demonstrates the default policy block.
+The dashboard retains the 25 most recent run traces and provenance snapshots in
+memory; they are cleared when the process exits. Public output previews may be
+shown; non-public output content is not returned in the trace.
+
+From the repository root, start the combined backend/dashboard server:
+
+```powershell
+python -m backend.dashboard_server
+```
+
+Open `http://127.0.0.1:5000` and select **Agent Lab** in the left navigation.
+Set `PORT` before startup to use another local port. The dashboard API exposes
+`GET /api/agent/scenarios`, `POST /api/agent/runs` with a JSON body containing
+only a predefined `scenario_id`, and `GET /api/agent/runs/{run_id}`. There is
+no separate frontend server or build step.
+
+## Phase — LLM Lab
+
+The LLM Lab keeps three explicit execution modes separate:
+
+- `deterministic`: a fixed backend-owned plan, with no model provider.
+- `fake`: an offline scenario-specific provider used for reproducible tests.
+- `live`: the OpenAI official Python SDK with structured function calling.
+
+For live mode on Windows PowerShell, install the declared dependencies and
+configure credentials in the server process environment:
+
+```powershell
+python -m pip install -r requirements.txt
+$env:OPENAI_API_KEY = "<your key>"
+$env:SENTINELAI_OPENAI_MODEL = "gpt-4o-mini"
+python -m backend.dashboard_server
+```
+
+Then open `http://127.0.0.1:5000` and select **LLM Lab**. The user task is sent
+to the configured provider, so do not include credentials or data you are not
+authorized to send to that provider. Tool arguments are schema-validated,
+destinations and input IDs are assigned by the backend, file reads are
+restricted to a per-run temporary workspace, and memory is isolated per run.
+Each action passes through `MonitorService`; only `ALLOW` executes. `WARN` and
+`BLOCK` stop the run. `send_message` remains simulated and
+`call_external_api` is not registered. Provider failures never fall back to
+fake mode.
+
+The dashboard API exposes `GET /api/llm/configuration`, `POST /api/llm/runs`,
+`GET /api/llm/runs`, `GET /api/llm/runs/{run_id}`,
+`GET /api/llm/runs/{run_id}/events`, and
+`GET /api/llm/runs/{run_id}/provenance`. Run records are in-memory, bounded to
+100 runs per process, and lost on restart. Cancellation is not supported.
+Configuration reports SDK/key availability without returning credential
+values. Standard tests use fake providers and do not require credentials or
+network access.
+
+Run the focused agent/API tests from the repository root with:
+
+```powershell
+python -B -m pytest -q -p no:cacheprovider tests/integration/test_llm_task_runner.py tests/integration/test_agent_dashboard_api.py
+```
