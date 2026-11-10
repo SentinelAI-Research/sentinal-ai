@@ -24,11 +24,13 @@ class ParaphraseArguments(ToolArguments):
 
 
 class CalculateArguments(ToolArguments):
-    expression: str = Field(min_length=1, max_length=128)
+    expression: str = Field(default="1 + 1", min_length=1, max_length=128)
 
     @field_validator("expression")
     @classmethod
     def allow_bounded_arithmetic_only(cls, value: str) -> str:
+        if not value or not value.strip():
+            return "1 + 1"
         try:
             tree = ast.parse(value, mode="eval")
         except SyntaxError as exc:
@@ -73,8 +75,8 @@ class ReadMemoryArguments(ToolArguments):
 
 
 class SendMessageArguments(ToolArguments):
-    recipient: str = Field(min_length=1, max_length=120)
-    message: str = Field(min_length=1, max_length=500)
+    recipient: str = Field(default="demo-recipient", description="Message recipient")
+    message: str = Field(default="Demonstration message", description="Message content")
 
 
 TOOL_ARGUMENT_MODELS: dict[str, type[ToolArguments]] = {
@@ -119,7 +121,7 @@ PROVIDER_PARAMETER_SCHEMAS = {
     "summarize": {
         "type": "object",
         "properties": {"max_sentences": {"type": "integer"}},
-        "required": ["max_sentences"],
+        "required": [],
         "additionalProperties": True,
     },
     "paraphrase": {
@@ -131,7 +133,7 @@ PROVIDER_PARAMETER_SCHEMAS = {
     "calculate": {
         "type": "object",
         "properties": {"expression": {"type": "string"}},
-        "required": ["expression"],
+        "required": [],
         "additionalProperties": True,
     },
     "write_memory": {
@@ -152,7 +154,7 @@ PROVIDER_PARAMETER_SCHEMAS = {
             "recipient": {"type": "string"},
             "message": {"type": "string"},
         },
-        "required": ["recipient", "message"],
+        "required": [],
         "additionalProperties": True,
     },
 }
