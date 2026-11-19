@@ -1,0 +1,15 @@
+warn_threshold: 0.85
+block_threshold: 0.85
+configs:
+  C0:
+    warn_threshold: 1.01
+  C1:
+    warn_threshold: 0.55
+  C2:
+    warn_threshold: 0.55
+  C2b:
+    warn_threshold: 0.55
+  C3:
+    warn_threshold: 0.85
+  C4:
+    warn_threshold: 0.85

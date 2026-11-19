@@ -1,13 +1,14 @@
 """Read-only SentinelAI research dashboard.
 
-Serves frontend files and exposes saved experiment metrics through /api/evaluation.
-Does not train models or load joblib files.
+Serves frontend files and exposes saved experiment metrics through /api/evaluation,
+alongside V5 enterprise metrics, evaluation reports, and scenario simulation endpoints.
+Does not train models or load joblib files unexpectedly.
 """
 
 from __future__ import annotations
 
-import json
 import importlib.util
+import json
 import mimetypes
 import os
 import threading
@@ -18,6 +19,8 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from pydantic import ValidationError
+
 from backend.agent.demo_scenarios import (
     SCENARIO_CATALOG,
     run_demo_scenario,
@@ -27,10 +30,10 @@ from backend.agent.llm_task_runner import (
     LLMRunRequest,
 )
 from backend.agent.tool_contracts import TOOL_DESTINATIONS, tool_schemas
-from pydantic import ValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIR = ROOT / "frontend"
+SAFE_ARTIFACTS_DIR = (ROOT / "results").resolve()
 
 RESULTS_DIR = ROOT / "results" / "ml_evaluation"
 LEGACY_RESULT_PATH = RESULTS_DIR / "provenance_hard_negative_evaluation.json"
@@ -65,6 +68,13 @@ V3_DATA_PATH = (
 )
 
 V4_METRICS_PATH = V4_DIR / "v4_evaluation_metrics.json"
+
+# V5 Enterprise Paths
+V5_RESULTS_DIR = ROOT / "results" / "v5"
+V5_RESULTS_REPORT = ROOT / "results" / "v5" / "v5_test_evaluation_report.json"
+V5_DEV_REPORT = ROOT / "models" / "v5" / "dev_tuning_report.json"
+V5_DEV_PATH = ROOT / "data" / "benchmark" / "v5" / "dev_scenarios.json"
+V5_TEST_PATH = ROOT / "data" / "benchmark" / "v5" / "test_scenarios.json"
 
 V2_SPLIT_DIR = ROOT / "data" / "processed" / "hard_negative" / "split_v2"
 V2_SPLIT_SUMMARY_PATH = V2_SPLIT_DIR / "split_summary.json"
@@ -141,6 +151,47 @@ def read_json(path: Path) -> dict[str, Any] | None:
     except (OSError, json.JSONDecodeError):
         return None
     return data if isinstance(data, dict) else None
+
+
+def read_json_list(path: Path) -> list[dict[str, Any]]:
+    """Read a JSON list of objects, returning an empty list if missing or invalid."""
+    if not path.exists():
+        return []
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(data, list):
+        return []
+    return [item for item in data if isinstance(item, dict)]
+
+
+def discover_v5_plot_artifacts() -> list[dict[str, str]]:
+    """Return image artifacts found inside the V5 results directory."""
+    image_extensions = {".gif", ".jpeg", ".jpg", ".png", ".svg", ".webp"}
+    results_root = SAFE_ARTIFACTS_DIR.resolve()
+    v5_root = V5_RESULTS_DIR.resolve()
+    artifacts = []
+
+    if not v5_root.is_dir() or results_root not in v5_root.parents:
+        return artifacts
+
+    for candidate in sorted(v5_root.rglob("*")):
+        resolved = candidate.resolve()
+        if (
+            candidate.suffix.lower() not in image_extensions
+            or not resolved.is_file()
+            or v5_root not in resolved.parents
+        ):
+            continue
+        relative_path = resolved.relative_to(results_root).as_posix()
+        artifacts.append(
+            {
+                "path": f"/results/{relative_path}",
+                "title": candidate.stem.replace("_", " "),
+            }
+        )
+    return artifacts
 
 
 def file_timestamp(path: Path) -> str | None:
@@ -340,16 +391,6 @@ def normalize_evaluation(raw: dict[str, Any] | None) -> dict[str, Any] | None:
     }
 
 
-def feature_metadata(path: Path) -> list[str]:
-    data = read_json(path)
-    if not data:
-        return []
-    for key in ("feature_names", "features", "feature_columns"):
-        if isinstance(data.get(key), list):
-            return [str(item) for item in data[key]]
-    return []
-
-
 def make_history_entry(
     experiment_id: str,
     title: str,
@@ -363,11 +404,7 @@ def make_history_entry(
     return {
         "id": experiment_id,
         "title": title,
-        "source": (
-            str(source_path.relative_to(ROOT))
-            if source_path.exists()
-            else str(source_path.relative_to(ROOT))
-        ),
+        "source": str(source_path.relative_to(ROOT)),
         "updated_at": file_timestamp(source_path),
         "note": note,
         "without_provenance": {
@@ -409,10 +446,11 @@ def ablation_snapshot() -> dict[str, Any]:
     if isinstance(raw_results, list):
         items = raw_results
     elif isinstance(raw_results, dict):
-        items = []
-        for key, value in raw_results.items():
-            if isinstance(value, dict):
-                items.append({"id": key, **value})
+        items = [
+            {"id": key, **value}
+            for key, value in raw_results.items()
+            if isinstance(value, dict)
+        ]
     else:
         items = []
 
@@ -630,7 +668,7 @@ def build_payload() -> dict[str, Any]:
                 else "models/hard_negative/v4/v4_evaluation_metrics.json"
             ),
             "updated_at": file_timestamp(V4_METRICS_PATH),
-            "note": "Generalization test across 4 unseen scenario sequence templates and prompt injection.",
+            "note": "Generalization test across unseen scenario sequence templates and prompt injection.",
             "without_provenance": {
                 "accuracy": None,
                 "macro_f1": v4["baseline_macro_f1"],
@@ -664,9 +702,9 @@ def build_payload() -> dict[str, Any]:
 
 
 class DashboardHandler(BaseHTTPRequestHandler):
-    """Serve static assets, evaluation data, and predefined agent demos."""
+    """Serve static assets, evaluation data, predefined agent demos, and V5 enterprise endpoints."""
 
-    server_version = "SentinelAI-Dashboard/2.0"
+    server_version = "SentinelAI-Dashboard/5.1"
 
     def do_GET(self) -> None:
         path = urlparse(self.path).path
@@ -689,6 +727,58 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
         if path == "/api/llm/runs":
             self.send_json({"runs": LLM_RUN_MANAGER.store.list()})
+            return
+
+        # V5 Enterprise Endpoints
+        if path == "/api/v5/report":
+            if not V5_RESULTS_REPORT.exists():
+                self.send_json({"error": "report_not_found"}, HTTPStatus.NOT_FOUND)
+                return
+            report = json.loads(V5_RESULTS_REPORT.read_text(encoding="utf-8"))
+            if isinstance(report, dict):
+                existing_artifacts = report.get("artifacts")
+                if not isinstance(existing_artifacts, list):
+                    existing_artifacts = []
+                report["artifacts"] = [
+                    *existing_artifacts,
+                    *discover_v5_plot_artifacts(),
+                ]
+            self.send_json(report)
+            return
+
+        if path == "/api/v5/dev-report":
+            if not V5_DEV_REPORT.exists():
+                self.send_json({"status": "not_found"}, HTTPStatus.NOT_FOUND)
+                return
+            self.send_json(json.loads(V5_DEV_REPORT.read_text(encoding="utf-8")))
+            return
+
+        if path == "/api/v5/scenarios":
+            dev_scenarios = read_json_list(V5_DEV_PATH)
+            test_scenarios = read_json_list(V5_TEST_PATH)
+            families = sorted(
+                {
+                    str(s["family"])
+                    for s in (dev_scenarios + test_scenarios)
+                    if isinstance(s.get("family"), str) and s.get("family")
+                }
+            )
+            self.send_json(
+                {
+                    "dev_count": len(dev_scenarios),
+                    "test_count": len(test_scenarios),
+                    "families": families,
+                    "sample_scenarios": [
+                        {
+                            "scenario_id": s.get("scenario_id"),
+                            "family": s.get("family"),
+                            "label": s.get("label"),
+                            "depth": s.get("depth"),
+                        }
+                        for s in dev_scenarios[:15]
+                    ],
+                }
+            )
             return
 
         if path.startswith("/api/llm/runs/"):
@@ -726,6 +816,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.send_json(run)
             return
 
+        if path.startswith("/results/"):
+            self.send_results_file(path)
+            return
+
         if path == "/favicon.ico":
             self.send_response(HTTPStatus.NO_CONTENT)
             self.end_headers()
@@ -734,11 +828,106 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.send_static(path)
 
     def do_POST(self) -> None:
-        if urlparse(self.path).path == "/api/llm/runs":
+        path = urlparse(self.path).path
+
+        if path == "/api/llm/runs":
             self.start_llm_run()
             return
 
-        if urlparse(self.path).path != "/api/agent/runs":
+        # V5 Scenario Runner Endpoint
+        if path == "/api/run-scenario":
+            try:
+                content_length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                self.send_json(
+                    {"error": "invalid_content_length"}, HTTPStatus.BAD_REQUEST
+                )
+                return
+
+            if content_length <= 0 or content_length > MAX_AGENT_REQUEST_BYTES:
+                self.send_json(
+                    {"error": "invalid_request_size"}, HTTPStatus.BAD_REQUEST
+                )
+                return
+
+            try:
+                req = json.loads(self.rfile.read(content_length))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                self.send_json({"error": "invalid_json"}, HTTPStatus.BAD_REQUEST)
+                return
+
+            if not isinstance(req, dict):
+                self.send_json({"error": "invalid_json"}, HTTPStatus.BAD_REQUEST)
+                return
+
+            partition = str(req.get("partition", "test"))
+            scenario_id = req.get("scenario_id")
+            family = str(req.get("family", "memory_mediated_leakage"))
+            config_name = str(req.get("config_name", "C4-ML"))
+
+            file_path = V5_DEV_PATH if partition.lower() == "dev" else V5_TEST_PATH
+            scenarios = read_json_list(file_path)
+            if not scenarios:
+                self.send_json({"error": "partition_not_found"}, HTTPStatus.NOT_FOUND)
+                return
+
+            target = None
+            if isinstance(scenario_id, str) and scenario_id:
+                target = next(
+                    (s for s in scenarios if s.get("scenario_id") == scenario_id), None
+                )
+            if not target:
+                target = next(
+                    (s for s in scenarios if s.get("family") == family), scenarios[0]
+                )
+
+            try:
+                from backend.monitor.config import MonitorConfig
+                from benchmark.runners.v5_experiment_runner import run_v5_scenario
+
+                models_dir = ROOT / "models" / "v5"
+                c3_model = models_dir / "best_c3_model.joblib"
+                c4_model = models_dir / "best_c4_model.joblib"
+
+                if config_name == "C3":
+                    cfg = MonitorConfig.from_preset(
+                        "C3",
+                        risk_model_path=str(c3_model) if c3_model.exists() else None,
+                    )
+                elif config_name == "C4-ML":
+                    cfg = MonitorConfig.from_preset(
+                        "C4",
+                        risk_model_path=str(c4_model) if c4_model.exists() else None,
+                    )
+                    cfg = MonitorConfig(**{**cfg.to_dict(), "name": "C4-ML"})
+                elif config_name == "C4-Heuristic":
+                    cfg = MonitorConfig.from_preset(
+                        "C4", warn_threshold=0.55, risk_model_path=None
+                    )
+                    cfg = MonitorConfig(**{**cfg.to_dict(), "name": "C4-Heuristic"})
+                else:
+                    cfg = MonitorConfig.from_preset(config_name)
+
+                step_rows, summary = run_v5_scenario(target, cfg)
+                self.send_json(
+                    {
+                        "scenario": target,
+                        "config": cfg.name,
+                        "summary": summary,
+                        "steps": step_rows,
+                    }
+                )
+            except Exception as exc:
+                print(
+                    f"[dashboard] V5 scenario run failed: {type(exc).__name__}: {exc}"
+                )
+                self.send_json(
+                    {"error": "scenario_execution_failed", "details": str(exc)},
+                    HTTPStatus.INTERNAL_SERVER_ERROR,
+                )
+            return
+
+        if path != "/api/agent/runs":
             self.send_json({"error": "not_found"}, HTTPStatus.NOT_FOUND)
             return
 
@@ -852,6 +1041,24 @@ class DashboardHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def send_results_file(self, path: str) -> None:
+        rel = path.removeprefix("/results/").lstrip("/")
+        candidate = (SAFE_ARTIFACTS_DIR / rel).resolve()
+        if SAFE_ARTIFACTS_DIR not in candidate.parents or not candidate.is_file():
+            self.send_error(HTTPStatus.NOT_FOUND)
+            return
+
+        body = candidate.read_bytes()
+        content_type = (
+            mimetypes.guess_type(candidate.name)[0] or "application/octet-stream"
+        )
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-cache")
         self.end_headers()
         self.wfile.write(body)
 

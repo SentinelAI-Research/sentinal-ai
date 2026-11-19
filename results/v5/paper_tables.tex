@@ -1,0 +1,86 @@
+% Auto-generated SentinelAI V5 Publication Tables (booktabs format)
+% Requires: \usepackage{booktabs}
+
+% ==========================================================================
+% TABLE B6: 30% DEV SET MULTI-MODEL COMPARISON (GROUPKFOLD BY SOURCE DOC)
+% ==========================================================================
+\begin{table*}[t]
+\centering
+\caption{30\% Development Set Multi-Model Cross-Validation Comparison (GroupKFold by Source Document).}
+\label{tab:v5_dev_models}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Model Family & \multicolumn{3}{c}{C3 (No Provenance)} & \multicolumn{3}{c}{C4 (Full Provenance DAG)} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+ & AUROC & PR-AUC & F1@0.5 & AUROC & PR-AUC & F1@0.5 \\
+\midrule
+HistGradientBoosting & 0.7542 & 0.6887 & 0.7005 & \textbf{0.9874} & \textbf{0.9837} & \textbf{0.9483} \\
+RandomForest & 0.7694 & 0.7237 & 0.6857 & \textbf{0.9867} & \textbf{0.9830} & \textbf{0.9476} \\
+LogisticRegression & 0.6974 & 0.6163 & 0.5918 & \textbf{0.9814} & \textbf{0.9765} & \textbf{0.9362} \\
+MLPClassifier & 0.7339 & 0.6671 & 0.6761 & \textbf{0.9851} & \textbf{0.9797} & \textbf{0.9392} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+% ==========================================================================
+% TABLE R1: 70% HELD-OUT TEST SET OVERALL COMPARISON (WITH 95% BOOTSTRAP CI)
+% ==========================================================================
+\begin{table*}[t]
+\centering
+\caption{Overall Security, Utility, and Early-Warning Comparison on the 70\% Held-Out Test Split (95\% Bootstrap CI).}
+\label{tab:v5_r1_overall}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Config & ASR ($\downarrow$) & Block Rate ($\uparrow$) & Benign Comp. ($\uparrow$) & Early Warn ($\uparrow$) & Mean Lead & Latency (ms) \\
+\midrule
+C0 & 100.0\% [100.0, 100.0] & 0.0\% [0.0, 0.0] & 100.0\% [100.0, 100.0] & 0.0\% [0.0, 0.0] & 0.00 & 0.26 \\
+C1 & 85.7\% [81.4, 89.6] & 14.3\% [10.4, 18.6] & 100.0\% [100.0, 100.0] & 0.0\% [0.0, 0.0] & 0.00 & 0.33 \\
+C2 & 85.7\% [81.4, 89.6] & 14.3\% [10.4, 18.6] & 100.0\% [100.0, 100.0] & 0.0\% [0.0, 0.0] & 0.00 & 0.31 \\
+C2b & 0.0\% [0.0, 0.0] & 100.0\% [100.0, 100.0] & 80.0\% [74.3, 85.2] & 0.0\% [0.0, 0.0] & 0.00 & 0.32 \\
+C3 & 85.7\% [81.4, 89.6] & 14.3\% [10.4, 18.6] & 100.0\% [100.0, 100.0] & 1.8\% [0.4, 3.6] & 0.04 & 72.69 \\
+C4-Heuristic & 0.0\% [0.0, 0.0] & 100.0\% [100.0, 100.0] & 100.0\% [100.0, 100.0] & 75.4\% [70.4, 80.0] & 2.75 & 0.33 \\
+C4-ML & 0.0\% [0.0, 0.0] & 100.0\% [100.0, 100.0] & 100.0\% [100.0, 100.0] & 85.7\% [81.4, 89.6] & 3.62 & 4.80 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+% ==========================================================================
+% TABLE R2: ATTACK BLOCK RATE BY ATTACK FAMILY (70% HELD-OUT TEST SPLIT)
+% ==========================================================================
+\begin{table*}[t]
+\centering
+\caption{Attack Block Rate (\%) Across Adversarial Attack Families on the 70\% Test Split.}
+\label{tab:v5_r2_families}
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+Attack Family & C0 & C1 & C2 & C2b & C3 & C4-Heur. & C4-ML \\
+\midrule
+derived\_fact\_leakage & 0.0\% & 0.0\% & 0.0\% & 100.0\% & 0.0\% & 100.0\% & 100.0\% \\
+direct\_leakage & 0.0\% & 100.0\% & 100.0\% & 100.0\% & 100.0\% & 100.0\% & 100.0\% \\
+long\_horizon\_leakage & 0.0\% & 0.0\% & 0.0\% & 100.0\% & 0.0\% & 100.0\% & 100.0\% \\
+memory\_mediated\_leakage & 0.0\% & 0.0\% & 0.0\% & 100.0\% & 0.0\% & 100.0\% & 100.0\% \\
+mixed\_source\_leakage & 0.0\% & 0.0\% & 0.0\% & 100.0\% & 0.0\% & 100.0\% & 100.0\% \\
+paraphrase\_leakage & 0.0\% & 0.0\% & 0.0\% & 100.0\% & 0.0\% & 100.0\% & 100.0\% \\
+summary\_leakage & 0.0\% & 0.0\% & 0.0\% & 100.0\% & 0.0\% & 100.0\% & 100.0\% \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+% ==========================================================================
+% TABLE R5: CONTROLLED COMPONENT ABLATION STUDY (70% HELD-OUT TEST SPLIT)
+% ==========================================================================
+\begin{table}[t]
+\centering
+\caption{Controlled Component Ablation Study on the 70\% Test Split.}
+\label{tab:v5_r5_ablations}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Ablation Variant & ASR ($\downarrow$) & Block ($\uparrow$) & Early Warn ($\uparrow$) & Benign Comp. ($\uparrow$) \\
+\midrule
+R5.0\_Full\_C4 & 0.0\% & 100.0\% & 85.7\% & 100.0\% \\
+R5.1\_No\_Sensitivity\_Inheritance & 85.7\% & 14.3\% & 85.7\% & 100.0\% \\
+R5.2\_No\_Memory\_Lineage & 28.2\% & 71.8\% & 85.7\% & 100.0\% \\
+R5.3\_Policy\_Only\_No\_Risk\_Fusion & 0.0\% & 100.0\% & 0.0\% & 100.0\% \\
+\bottomrule
+\end{tabular}
+\end{table}

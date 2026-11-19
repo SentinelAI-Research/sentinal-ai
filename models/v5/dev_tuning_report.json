@@ -1,0 +1,331 @@
+{
+  "dev_scenarios_count": 210,
+  "dev_step_rows_count": 1181,
+  "unique_dev_source_docs": 32,
+  "models": {
+    "C3": {
+      "HistGradientBoosting": {
+        "cv_auroc": 0.7542,
+        "cv_pr_auc": 0.6887,
+        "cv_f1_at_0_5": 0.7005,
+        "artifact_path": "models\\v5\\c3_HistGradientBoosting.joblib"
+      },
+      "RandomForest": {
+        "cv_auroc": 0.7694,
+        "cv_pr_auc": 0.7237,
+        "cv_f1_at_0_5": 0.6857,
+        "artifact_path": "models\\v5\\c3_RandomForest.joblib"
+      },
+      "LogisticRegression": {
+        "cv_auroc": 0.6974,
+        "cv_pr_auc": 0.6163,
+        "cv_f1_at_0_5": 0.5918,
+        "artifact_path": "models\\v5\\c3_LogisticRegression.joblib"
+      },
+      "MLPClassifier": {
+        "cv_auroc": 0.7339,
+        "cv_pr_auc": 0.6671,
+        "cv_f1_at_0_5": 0.6761,
+        "artifact_path": "models\\v5\\c3_MLPClassifier.joblib"
+      }
+    },
+    "C4": {
+      "HistGradientBoosting": {
+        "cv_auroc": 0.9874,
+        "cv_pr_auc": 0.9837,
+        "cv_f1_at_0_5": 0.9483,
+        "artifact_path": "models\\v5\\c4_HistGradientBoosting.joblib"
+      },
+      "RandomForest": {
+        "cv_auroc": 0.9867,
+        "cv_pr_auc": 0.983,
+        "cv_f1_at_0_5": 0.9476,
+        "artifact_path": "models\\v5\\c4_RandomForest.joblib"
+      },
+      "LogisticRegression": {
+        "cv_auroc": 0.9814,
+        "cv_pr_auc": 0.9765,
+        "cv_f1_at_0_5": 0.9362,
+        "artifact_path": "models\\v5\\c4_LogisticRegression.joblib"
+      },
+      "MLPClassifier": {
+        "cv_auroc": 0.9851,
+        "cv_pr_auc": 0.9797,
+        "cv_f1_at_0_5": 0.9392,
+        "artifact_path": "models\\v5\\c4_MLPClassifier.joblib"
+      }
+    }
+  },
+  "best_C3": {
+    "model_name": "RandomForest",
+    "cv_pr_auc": 0.7237,
+    "artifact_path": "models\\v5\\best_c3_model.joblib",
+    "threshold_tuning": {
+      "selected_warn_threshold": 0.85,
+      "selected_metrics": {
+        "warn_threshold": 0.85,
+        "attack_detection_rate": 0.55,
+        "early_warning_rate": 0.2583,
+        "benign_fpr": 0.0111,
+        "meets_fpr_constraint": true
+      },
+      "sweep": [
+        {
+          "warn_threshold": 0.1,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 1.0,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.15,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 1.0,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.2,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 1.0,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.25,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 1.0,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.3,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 1.0,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.35,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 1.0,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.4,
+          "attack_detection_rate": 0.9417,
+          "early_warning_rate": 0.7917,
+          "benign_fpr": 0.7111,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.45,
+          "attack_detection_rate": 0.9417,
+          "early_warning_rate": 0.7917,
+          "benign_fpr": 0.7111,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.5,
+          "attack_detection_rate": 0.9417,
+          "early_warning_rate": 0.7917,
+          "benign_fpr": 0.5111,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.55,
+          "attack_detection_rate": 0.9417,
+          "early_warning_rate": 0.7917,
+          "benign_fpr": 0.5111,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.6,
+          "attack_detection_rate": 0.9417,
+          "early_warning_rate": 0.7917,
+          "benign_fpr": 0.5111,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.65,
+          "attack_detection_rate": 0.9167,
+          "early_warning_rate": 0.6833,
+          "benign_fpr": 0.4222,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.7,
+          "attack_detection_rate": 0.7417,
+          "early_warning_rate": 0.375,
+          "benign_fpr": 0.2222,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.75,
+          "attack_detection_rate": 0.6417,
+          "early_warning_rate": 0.375,
+          "benign_fpr": 0.1444,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.8,
+          "attack_detection_rate": 0.6417,
+          "early_warning_rate": 0.275,
+          "benign_fpr": 0.0556,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.85,
+          "attack_detection_rate": 0.55,
+          "early_warning_rate": 0.2583,
+          "benign_fpr": 0.0111,
+          "meets_fpr_constraint": true
+        },
+        {
+          "warn_threshold": 0.9,
+          "attack_detection_rate": 0.55,
+          "early_warning_rate": 0.2583,
+          "benign_fpr": 0.0111,
+          "meets_fpr_constraint": true
+        }
+      ]
+    }
+  },
+  "best_C4": {
+    "model_name": "HistGradientBoosting",
+    "cv_pr_auc": 0.9837,
+    "artifact_path": "models\\v5\\best_c4_model.joblib",
+    "threshold_tuning": {
+      "selected_warn_threshold": 0.85,
+      "selected_metrics": {
+        "warn_threshold": 0.85,
+        "attack_detection_rate": 1.0,
+        "early_warning_rate": 0.5083,
+        "benign_fpr": 0.0,
+        "meets_fpr_constraint": true
+      },
+      "sweep": [
+        {
+          "warn_threshold": 0.1,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.15,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.2,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.25,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.3,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.35,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.4,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.45,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.5,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.55,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.6,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.65,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.7,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.85,
+          "benign_fpr": 0.3,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.75,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.7917,
+          "benign_fpr": 0.1,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.8,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.7917,
+          "benign_fpr": 0.1,
+          "meets_fpr_constraint": false
+        },
+        {
+          "warn_threshold": 0.85,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.5083,
+          "benign_fpr": 0.0,
+          "meets_fpr_constraint": true
+        },
+        {
+          "warn_threshold": 0.9,
+          "attack_detection_rate": 1.0,
+          "early_warning_rate": 0.5083,
+          "benign_fpr": 0.0,
+          "meets_fpr_constraint": true
+        }
+      ]
+    }
+  }
+}

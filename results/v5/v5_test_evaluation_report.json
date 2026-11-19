@@ -1,0 +1,1170 @@
+{
+  "test_scenarios_total": 490,
+  "R1_overall_comparison": [
+    {
+      "config": "C0",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 1.0,
+      "asr_ci95": [
+        1.0,
+        1.0
+      ],
+      "attack_block_rate": 0.0,
+      "attack_block_ci95": [
+        0.0,
+        0.0
+      ],
+      "attack_detection_rate": 0.0,
+      "attack_detection_ci95": [
+        0.0,
+        0.0
+      ],
+      "benign_false_alert_rate": 0.0,
+      "benign_false_alert_ci95": [
+        0.0,
+        0.0
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0,
+      "mean_latency_ms": 0.2633,
+      "median_latency_ms": 0.1866,
+      "p95_latency_ms": 0.5849
+    },
+    {
+      "config": "C1",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.8571,
+      "asr_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "attack_block_rate": 0.1429,
+      "attack_block_ci95": [
+        0.1036,
+        0.1857
+      ],
+      "attack_detection_rate": 0.1429,
+      "attack_detection_ci95": [
+        0.1036,
+        0.1857
+      ],
+      "benign_false_alert_rate": 0.0,
+      "benign_false_alert_ci95": [
+        0.0,
+        0.0
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0,
+      "mean_latency_ms": 0.3307,
+      "median_latency_ms": 0.261,
+      "p95_latency_ms": 0.6801
+    },
+    {
+      "config": "C2",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.8571,
+      "asr_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "attack_block_rate": 0.1429,
+      "attack_block_ci95": [
+        0.1036,
+        0.1857
+      ],
+      "attack_detection_rate": 0.1429,
+      "attack_detection_ci95": [
+        0.1036,
+        0.1857
+      ],
+      "benign_false_alert_rate": 0.0,
+      "benign_false_alert_ci95": [
+        0.0,
+        0.0
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0,
+      "mean_latency_ms": 0.3103,
+      "median_latency_ms": 0.246,
+      "p95_latency_ms": 0.6499
+    },
+    {
+      "config": "C2b",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.0,
+      "asr_ci95": [
+        0.0,
+        0.0
+      ],
+      "attack_block_rate": 1.0,
+      "attack_block_ci95": [
+        1.0,
+        1.0
+      ],
+      "attack_detection_rate": 1.0,
+      "attack_detection_ci95": [
+        1.0,
+        1.0
+      ],
+      "benign_false_alert_rate": 0.2,
+      "benign_false_alert_ci95": [
+        0.1476,
+        0.2571
+      ],
+      "benign_false_block_rate": 0.2,
+      "benign_completion_rate": 0.8,
+      "benign_completion_ci95": [
+        0.7429,
+        0.8524
+      ],
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0,
+      "mean_latency_ms": 0.3247,
+      "median_latency_ms": 0.2669,
+      "p95_latency_ms": 0.692
+    },
+    {
+      "config": "C3",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.8571,
+      "asr_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "attack_block_rate": 0.1429,
+      "attack_block_ci95": [
+        0.1036,
+        0.1857
+      ],
+      "attack_detection_rate": 0.4786,
+      "attack_detection_ci95": [
+        0.4214,
+        0.5357
+      ],
+      "benign_false_alert_rate": 0.0,
+      "benign_false_alert_ci95": [
+        0.0,
+        0.0
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.0179,
+      "early_warning_ci95": [
+        0.0036,
+        0.0357
+      ],
+      "mean_lead_steps": 0.0373,
+      "median_lead_steps": 0.0,
+      "mean_latency_ms": 72.6865,
+      "median_latency_ms": 68.0181,
+      "p95_latency_ms": 92.7015
+    },
+    {
+      "config": "C4-Heuristic",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.0,
+      "asr_ci95": [
+        0.0,
+        0.0
+      ],
+      "attack_block_rate": 1.0,
+      "attack_block_ci95": [
+        1.0,
+        1.0
+      ],
+      "attack_detection_rate": 1.0,
+      "attack_detection_ci95": [
+        1.0,
+        1.0
+      ],
+      "benign_false_alert_rate": 0.2381,
+      "benign_false_alert_ci95": [
+        0.1857,
+        0.2952
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.7536,
+      "early_warning_ci95": [
+        0.7036,
+        0.8
+      ],
+      "mean_lead_steps": 2.7464,
+      "median_lead_steps": 2.5,
+      "mean_latency_ms": 0.3296,
+      "median_latency_ms": 0.2645,
+      "p95_latency_ms": 0.686
+    },
+    {
+      "config": "C4-ML",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.0,
+      "asr_ci95": [
+        0.0,
+        0.0
+      ],
+      "attack_block_rate": 1.0,
+      "attack_block_ci95": [
+        1.0,
+        1.0
+      ],
+      "attack_detection_rate": 1.0,
+      "attack_detection_ci95": [
+        1.0,
+        1.0
+      ],
+      "benign_false_alert_rate": 0.4381,
+      "benign_false_alert_ci95": [
+        0.3762,
+        0.5
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.8571,
+      "early_warning_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "mean_lead_steps": 3.6179,
+      "median_lead_steps": 3.5,
+      "mean_latency_ms": 4.8039,
+      "median_latency_ms": 4.6683,
+      "p95_latency_ms": 7.3234
+    }
+  ],
+  "R2_by_attack_family": {
+    "derived_fact_leakage": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "direct_leakage": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "long_horizon_leakage": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "memory_mediated_leakage": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "mixed_source_leakage": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "paraphrase_leakage": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "summary_leakage": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    }
+  },
+  "R2_by_derivation_depth": {
+    "depth_0": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_1": {
+      "C0": {
+        "count": 35,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 35,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 35,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 35,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 35,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 35,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 35,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_2": {
+      "C0": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 40,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 40,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_3": {
+      "C0": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 50,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 50,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 50,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_4": {
+      "C0": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 50,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 50,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 50,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 50,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_5": {
+      "C0": {
+        "count": 46,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 46,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 46,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 46,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 46,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 46,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 46,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_6": {
+      "C0": {
+        "count": 8,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 8,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 8,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 8,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 8,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 8,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 8,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_7": {
+      "C0": {
+        "count": 10,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 10,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 10,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 10,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 10,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 10,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 10,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    },
+    "depth_8": {
+      "C0": {
+        "count": 1,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C1": {
+        "count": 1,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2": {
+        "count": 1,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C2b": {
+        "count": 1,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C3": {
+        "count": 1,
+        "asr": 1.0,
+        "block_rate": 0.0
+      },
+      "C4-Heuristic": {
+        "count": 1,
+        "asr": 0.0,
+        "block_rate": 1.0
+      },
+      "C4-ML": {
+        "count": 1,
+        "asr": 0.0,
+        "block_rate": 1.0
+      }
+    }
+  },
+  "R3_early_warning_lead": [
+    {
+      "config": "C0",
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0
+    },
+    {
+      "config": "C1",
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0
+    },
+    {
+      "config": "C2",
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0
+    },
+    {
+      "config": "C2b",
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0
+    },
+    {
+      "config": "C3",
+      "early_warning_rate": 0.0179,
+      "early_warning_ci95": [
+        0.0036,
+        0.0357
+      ],
+      "mean_lead_steps": 0.0373,
+      "median_lead_steps": 0.0
+    },
+    {
+      "config": "C4-Heuristic",
+      "early_warning_rate": 0.7536,
+      "early_warning_ci95": [
+        0.7036,
+        0.8
+      ],
+      "mean_lead_steps": 2.7464,
+      "median_lead_steps": 2.5
+    },
+    {
+      "config": "C4-ML",
+      "early_warning_rate": 0.8571,
+      "early_warning_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "mean_lead_steps": 3.6179,
+      "median_lead_steps": 3.5
+    }
+  ],
+  "R4_runtime_latency_ms": [
+    {
+      "config": "C0",
+      "mean_latency_ms": 0.2633,
+      "median_latency_ms": 0.1866,
+      "p95_latency_ms": 0.5849
+    },
+    {
+      "config": "C1",
+      "mean_latency_ms": 0.3307,
+      "median_latency_ms": 0.261,
+      "p95_latency_ms": 0.6801
+    },
+    {
+      "config": "C2",
+      "mean_latency_ms": 0.3103,
+      "median_latency_ms": 0.246,
+      "p95_latency_ms": 0.6499
+    },
+    {
+      "config": "C2b",
+      "mean_latency_ms": 0.3247,
+      "median_latency_ms": 0.2669,
+      "p95_latency_ms": 0.692
+    },
+    {
+      "config": "C3",
+      "mean_latency_ms": 72.6865,
+      "median_latency_ms": 68.0181,
+      "p95_latency_ms": 92.7015
+    },
+    {
+      "config": "C4-Heuristic",
+      "mean_latency_ms": 0.3296,
+      "median_latency_ms": 0.2645,
+      "p95_latency_ms": 0.686
+    },
+    {
+      "config": "C4-ML",
+      "mean_latency_ms": 4.8039,
+      "median_latency_ms": 4.6683,
+      "p95_latency_ms": 7.3234
+    }
+  ],
+  "R5_component_ablations": [
+    {
+      "config": "R5.0_Full_C4",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.0,
+      "asr_ci95": [
+        0.0,
+        0.0
+      ],
+      "attack_block_rate": 1.0,
+      "attack_block_ci95": [
+        1.0,
+        1.0
+      ],
+      "attack_detection_rate": 1.0,
+      "attack_detection_ci95": [
+        1.0,
+        1.0
+      ],
+      "benign_false_alert_rate": 0.4381,
+      "benign_false_alert_ci95": [
+        0.3762,
+        0.5
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.8571,
+      "early_warning_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "mean_lead_steps": 3.6179,
+      "median_lead_steps": 3.5,
+      "mean_latency_ms": 6.4046,
+      "median_latency_ms": 5.4588,
+      "p95_latency_ms": 9.7794
+    },
+    {
+      "config": "R5.1_No_Sensitivity_Inheritance",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.8571,
+      "asr_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "attack_block_rate": 0.1429,
+      "attack_block_ci95": [
+        0.1036,
+        0.1857
+      ],
+      "attack_detection_rate": 1.0,
+      "attack_detection_ci95": [
+        1.0,
+        1.0
+      ],
+      "benign_false_alert_rate": 0.3,
+      "benign_false_alert_ci95": [
+        0.238,
+        0.3619
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.8571,
+      "early_warning_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "mean_lead_steps": 3.6179,
+      "median_lead_steps": 3.5,
+      "mean_latency_ms": 4.2632,
+      "median_latency_ms": 3.77,
+      "p95_latency_ms": 7.1532
+    },
+    {
+      "config": "R5.2_No_Memory_Lineage",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.2821,
+      "asr_ci95": [
+        0.2321,
+        0.3357
+      ],
+      "attack_block_rate": 0.7179,
+      "attack_block_ci95": [
+        0.6643,
+        0.7679
+      ],
+      "attack_detection_rate": 1.0,
+      "attack_detection_ci95": [
+        1.0,
+        1.0
+      ],
+      "benign_false_alert_rate": 0.4381,
+      "benign_false_alert_ci95": [
+        0.3762,
+        0.5
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.8571,
+      "early_warning_ci95": [
+        0.8143,
+        0.8964
+      ],
+      "mean_lead_steps": 3.6179,
+      "median_lead_steps": 3.5,
+      "mean_latency_ms": 3.3708,
+      "median_latency_ms": 2.5012,
+      "p95_latency_ms": 6.0949
+    },
+    {
+      "config": "R5.3_Policy_Only_No_Risk_Fusion",
+      "test_attacks": 280,
+      "test_benign": 210,
+      "asr": 0.0,
+      "asr_ci95": [
+        0.0,
+        0.0
+      ],
+      "attack_block_rate": 1.0,
+      "attack_block_ci95": [
+        1.0,
+        1.0
+      ],
+      "attack_detection_rate": 1.0,
+      "attack_detection_ci95": [
+        1.0,
+        1.0
+      ],
+      "benign_false_alert_rate": 0.1381,
+      "benign_false_alert_ci95": [
+        0.0952,
+        0.1857
+      ],
+      "benign_false_block_rate": 0.0,
+      "benign_completion_rate": 1.0,
+      "benign_completion_ci95": [
+        1.0,
+        1.0
+      ],
+      "early_warning_rate": 0.0,
+      "early_warning_ci95": [
+        0.0,
+        0.0
+      ],
+      "mean_lead_steps": 0.0,
+      "median_lead_steps": 0.0,
+      "mean_latency_ms": 3.2791,
+      "median_latency_ms": 2.5042,
+      "p95_latency_ms": 6.0877
+    }
+  ]
+}

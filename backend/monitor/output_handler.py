@@ -13,13 +13,22 @@ class OutputDataObjectHandler:
     """
     Creates and registers DataObjects produced by allowed tool executions.
 
-    The output inherits the highest sensitivity among all parents.
-    Supported runtime labels follow PUBLIC < INTERNAL < CONFIDENTIAL.
-    Unknown labels fail closed.
+    The output inherits the highest sensitivity among all parents when
+    inherit_sensitivity=True (C4 / C2b). When inherit_sensitivity=False
+    (C1 / C2 / C3 / R5.1), derived objects reset to PUBLIC so non-lineage
+    baselines do not receive free provenance.
     """
 
-    def __init__(self, provenance_graph: ProvenanceGraph):
+    def __init__(
+        self,
+        provenance_graph: ProvenanceGraph,
+        *,
+        inherit_sensitivity: bool = True,
+        memory_preserves_sensitivity: bool = True,
+    ):
         self.provenance_graph = provenance_graph
+        self.inherit_sensitivity = inherit_sensitivity
+        self.memory_preserves_sensitivity = memory_preserves_sensitivity
 
     def create_output_object(
         self,
@@ -33,7 +42,6 @@ class OutputDataObjectHandler:
         Returns:
             The object_id of the newly created DataObject.
         """
-
         if not execution_result.executed:
             raise ValueError(
                 "Cannot create an output DataObject for a tool "
@@ -51,9 +59,17 @@ class OutputDataObjectHandler:
         )
         sensitivities = [parent.sensitivity for parent in parent_objects]
         if source_sensitivity is not None:
-            # Keep the former argument as an additional conservative constraint.
             sensitivities.append(source_sensitivity)
-        output_sensitivity = most_sensitive_sensitivity(sensitivities)
+
+        if not self.inherit_sensitivity and proposal.tool_name != "read_file":
+            output_sensitivity = "PUBLIC"
+        elif not self.memory_preserves_sensitivity and proposal.tool_name in {
+            "write_memory",
+            "read_memory",
+        }:
+            output_sensitivity = "PUBLIC"
+        else:
+            output_sensitivity = most_sensitive_sensitivity(sensitivities)
 
         output_object_id = f"{proposal.step_id}-output"
         if self.provenance_graph.has_object(output_object_id):

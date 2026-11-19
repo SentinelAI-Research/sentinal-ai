@@ -2,18 +2,29 @@ const pageContent = document.getElementById("page-content");
 const navButtons = [...document.querySelectorAll(".nav-item")];
 const breadcrumbCurrent = document.getElementById("breadcrumb-current");
 const topbarTitle = document.getElementById("topbar-title");
+const backendHealthTag = document.getElementById("backend-health-tag");
+
 let agentScenarios = [];
 let agentRun = null;
 let agentRunState = "idle";
 let agentRunError = "";
 let selectedAgentStep = 0;
+
 let llmConfiguration = null;
 let llmHistory = [];
 let llmCurrentRun = null;
 let llmCurrentRunId = null;
 let llmIsRunning = false;
 let llmSelectedEvent = 0;
-let llmHistoryFilters = { status: "all", mode: "all", verdict: "all" };
+
+let v5ReportData = null;
+let v5DevReportData = null;
+let v5ScenarioCatalog = null;
+let v5ActiveTableKey = null;
+let v5SelectedRowIndex = null;
+let v5SelectedModelKey = null;
+let v5LastSimResult = null;
+let v5SelectedSimStep = 0;
 
 const pageNames = {
   overview: "Research Overview",
@@ -22,42 +33,87 @@ const pageNames = {
   "experiment-3": "Experiment 3 — Ablation & Shortcut Audit",
   "experiment-4": "Experiment 4 — V3 Matched-Pair Benchmark",
   "experiment-5": "Experiment 5 — V4 Zero-Shot Templates",
+  "v5-enterprise": "V5 Enterprise Suite — Tables, Models, DAG & Simulation",
   "agent-lab": "Deterministic Agent Lab",
   "llm-lab": "LLM Lab",
   roadmap: "V4 Research Roadmap"
 };
 
+const METRIC_GLOSSARY = [
+  {
+    term: "ASR (Attack Success Rate · ↓ Lower is better)",
+    desc: "Fraction of attack trajectories where an unauthorized or risky action succeeds despite monitoring."
+  },
+  {
+    term: "Attack Block Rate · ↑ Higher is better",
+    desc: "Share of attack trajectories intercepted (BLOCK) before risky exfiltration or execution completes."
+  },
+  {
+    term: "Attack Detection Rate · ↑ Higher is better",
+    desc: "Share of risky/attack trajectories flagged with a warning (WARN) or block (BLOCK) by the monitor."
+  },
+  {
+    term: "Benign FPR (False Positive Rate · ↓ Lower is better)",
+    desc: "How often safe/benign trajectories trigger a false security alert or unnecessary block."
+  },
+  {
+    term: "Benign Completion · ↑ Higher is better",
+    desc: "Percentage of legitimate benign tasks that complete cleanly without disruptive intervention."
+  },
+  {
+    term: "Early-Warning Rate · ↑ Higher is better",
+    desc: "How often risk is detected at an intermediate step before the final violation/exfiltration attempt."
+  },
+  {
+    term: "Macro F1 & Accuracy · ↑ Higher is better",
+    desc: "Accuracy measures overall correct predictions; Macro F1 averages F1 across classes equally so minority/risk classes still count."
+  },
+  {
+    term: "Mean / P95 Latency (ms) · ↓ Lower is better",
+    desc: "Runtime overhead added by the monitor per step/evaluation in milliseconds."
+  }
+];
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
 function metricCard(label, value, note = "", extraClass = "") {
   return `
     <article class="card metric-card ${extraClass}">
-      <div class="card-title">${label}</div>
-      <div class="metric-value numeric">${value}</div>
-      <div class="metric-note">${note}</div>
+      <div class="card-title">${escapeHtml(label)}</div>
+      <div class="metric-value numeric">${escapeHtml(value)}</div>
+      <div class="metric-note">${escapeHtml(note)}</div>
     </article>`;
 }
 
 function nextPage(page, title, description) {
   return `
-    <button class="next-link" data-go="${page}">
-      <span><strong>${title}</strong><small>${description}</small></span>
-      <span class="next-arrow">→</span>
+    <button type="button" class="next-link" data-go="${escapeHtml(page)}">
+      <span><strong>${escapeHtml(title)}</strong><small>${escapeHtml(description)}</small></span>
+      <span class="next-arrow" aria-hidden="true">→</span>
     </button>`;
 }
 
 function pageHeader(kicker, title, description, tag = "") {
   return `
     <div class="experiment-header">
-      <div class="section-kicker">${kicker}</div>
-      <h1>${title}</h1>
-      <p>${description}</p>
-      ${tag ? `<div style="margin-top:13px"><span class="pill gray">${tag}</span></div>` : ""}
+      <div class="section-kicker">${escapeHtml(kicker)}</div>
+      <h1>${escapeHtml(title)}</h1>
+      <p>${escapeHtml(description)}</p>
+      ${tag ? `<div style="margin-top:12px"><span class="pill gray">${escapeHtml(tag)}</span></div>` : ""}
     </div>`;
 }
 
 function sectionHeading(title, description = "") {
   return `
     <div class="section-heading">
-      <div><h2>${title}</h2>${description ? `<p>${description}</p>` : ""}</div>
+      <div><h2>${escapeHtml(title)}</h2>${description ? `<p>${escapeHtml(description)}</p>` : ""}</div>
     </div>`;
 }
 
@@ -68,17 +124,257 @@ function comparisonTable(rows) {
         <thead><tr><th>Metric</th><th>Baseline</th><th>Provenance-aware</th><th>Difference</th></tr></thead>
         <tbody>${rows.map(row => `
           <tr>
-            <td>${row[0]}</td>
-            <td class="numeric">${row[1]}</td>
-            <td class="numeric">${row[2]}</td>
-            <td><strong>${row[3]}</strong></td>
+            <td>${escapeHtml(row[0])}</td>
+            <td class="numeric">${escapeHtml(row[1])}</td>
+            <td class="numeric">${escapeHtml(row[2])}</td>
+            <td><strong>${escapeHtml(row[3])}</strong></td>
           </tr>`).join("")}
         </tbody>
       </table>
     </div>`;
 }
 
+function formatMetricPercent(val) {
+  if (typeof val !== "number" || Number.isNaN(val)) return "—";
+  const pct = Math.abs(val) <= 1 ? val * 100 : val;
+  return `${pct.toFixed(2)}%`;
+}
+
+function formatNumber(val, digits = 2) {
+  if (typeof val !== "number" || Number.isNaN(val)) return "—";
+  return val.toFixed(digits);
+}
+
+function extractReportTables(report) {
+  if (!report || typeof report !== "object") return [];
+  const entries = [];
+  for (const [key, value] of Object.entries(report)) {
+    if (Array.isArray(value) && value.length > 0 && typeof value[0] === "object" && value[0] !== null) {
+      entries.push({ key, rows: value });
+    }
+  }
+  return entries;
+}
+
+function formatTableLabel(key) {
+  return key
+    .replaceAll("_", " ")
+    .replace(/\b(r\d+)\b/gi, match => match.toUpperCase());
+}
+
+function computeBestConfigs(report) {
+  const tables = extractReportTables(report);
+  const primary = tables.find(t => /r1|overall|comparison/i.test(t.key)) || tables[0];
+  if (!primary || !Array.isArray(primary.rows) || primary.rows.length === 0) {
+    return null;
+  }
+
+  const rows = primary.rows;
+  const pickBy = (predicateScore, higherBetter = true) => {
+    let best = null;
+    let bestScore = null;
+    for (const row of rows) {
+      const score = predicateScore(row);
+      if (typeof score !== "number" || Number.isNaN(score)) continue;
+      if (bestScore === null || (higherBetter ? score > bestScore : score < bestScore)) {
+        bestScore = score;
+        best = row;
+      }
+    }
+    return best ? { name: best.config || best.model || best.name || best.variant || "Unknown", score: bestScore, row: best } : null;
+  };
+
+  return {
+    tableKey: primary.key,
+    lowestAsr: pickBy(r => r.asr, false),
+    highestBlock: pickBy(r => r.attack_block_rate ?? r.block_rate, true),
+    lowestFpr: pickBy(r => r.benign_false_alert_rate ?? r.benign_fpr, false),
+    highestEarlyWarn: pickBy(r => r.early_warning_rate, true),
+    lowestLatency: pickBy(r => r.mean_latency_ms ?? r.latency_ms, false),
+    allRows: rows
+  };
+}
+
+function renderGlossarySection() {
+  return `
+    <article class="card content-card">
+      <div class="section-kicker">METRIC GUIDE</div>
+      <h2>What these evaluation metrics &amp; classifications mean</h2>
+      <p class="muted small" style="margin-bottom:14px">
+        Plain-English definitions so every metric and verdict shown in tables and simulations is transparent during review.
+      </p>
+      <div class="glossary-grid">
+        ${METRIC_GLOSSARY.map(item => `
+          <div class="glossary-item">
+            <strong>${escapeHtml(item.term)}</strong>
+            <span>${escapeHtml(item.desc)}</span>
+          </div>
+        `).join("")}
+      </div>
+    </article>
+  `;
+}
+
 const pages = {
+  "v5-enterprise"() {
+    return `
+      <section class="v5-banner">
+        <div>
+          <div class="eyebrow">EXPERIMENT 06 · ENTERPRISE SUITE</div>
+          <h1>V5 Enterprise Benchmark, Model Comparison &amp; Live DAG Simulation</h1>
+          <p>
+            Inspect full empirical tables dynamically loaded from backend reports, compare evaluated monitor/model
+            configurations, view generated result charts, and execute live step-by-step provenance simulations.
+          </p>
+        </div>
+        <span class="agent-demo-tag">DYNAMIC V5 SUITE</span>
+      </section>
+
+      <div id="v5-kpi-grid" class="grid grid-4">
+        ${metricCard("Primary Suite Status", "Loading…", "Reading /api/v5/report")}
+        ${metricCard("Lowest Attack Success (ASR)", "—", "Dynamic best config", "green")}
+        ${metricCard("Highest Attack Block Rate", "—", "Dynamic best config", "green")}
+        ${metricCard("Early-Warning Rate", "—", "Pre-violation detection", "amber")}
+      </div>
+
+      <article id="v5-model-comparison-card" class="card content-card">
+        <div class="section-kicker">MODEL &amp; PRESET EVALUATION</div>
+        <h2>Model &amp; Configuration Comparison</h2>
+        <p class="muted small">
+          Dynamically compares evaluated configurations from the loaded V5 report (e.g., unmonitored/rule presets vs.
+          non-provenance ML vs. provenance-aware configurations) and highlights top performers per criterion.
+        </p>
+        <div id="v5-model-comparison-body" style="margin-top:12px">
+          <div class="empty-state">Loading V5 evaluation report to compare models and presets…</div>
+        </div>
+      </article>
+
+      <article id="v5-observations-card" class="card content-card">
+        <div class="section-kicker">REPORT-DERIVED MODEL NOTES</div>
+        <h2>Model Observations</h2>
+        <p class="muted small">
+          Select an evaluated configuration or trained classifier to inspect its measured metrics and comparisons
+          with entries from the same report section.
+        </p>
+        <div id="v5-observation-list" class="v5-observation-list" style="margin-top:12px"></div>
+        <div id="v5-observation-detail" class="v5-observation-detail" aria-live="polite">
+          <div class="empty-state">Loading report-derived observations…</div>
+        </div>
+      </article>
+
+      <article id="v5-tables-card" class="card content-card">
+        <div class="table-toolbar">
+          <div>
+            <div class="section-kicker">EMPIRICAL RESULT TABLES</div>
+            <h2>Dynamic Benchmark Tables (R1–R5 &amp; Report Sections)</h2>
+            <p class="muted small">Switch tabs across available report tables and click any row to inspect full details.</p>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button type="button" id="v5-refresh-btn" class="agent-clear-button">Refresh Report</button>
+            <button type="button" id="v5-export-json-btn" class="agent-clear-button">Export JSON</button>
+          </div>
+        </div>
+        <div id="v5-table-tabs" class="tab-bar" style="margin-bottom:12px"></div>
+        <div class="table-wrap">
+          <table>
+            <thead id="v5-dynamic-thead"></thead>
+            <tbody id="v5-dynamic-tbody">
+              <tr><td class="empty-state">Loading table rows…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="v5-row-inspector" class="row-inspector-drawer" hidden></div>
+      </article>
+
+      <article id="v5-artifacts-card" class="card content-card">
+        <div class="section-kicker">GENERATED VISUAL ARTIFACTS</div>
+        <h2>Plots &amp; Result Figures</h2>
+        <p class="muted small">
+          Displays any result figures/charts referenced by the backend report or present in the results directory.
+        </p>
+        <div id="v5-artifacts-body" style="margin-top:12px">
+          <div class="empty-state">Checking generated result figures…</div>
+        </div>
+      </article>
+
+      <article class="card content-card">
+        <div class="section-kicker">LIVE SIMULATION &amp; PROVENANCE DAG</div>
+        <h2>Interactive Scenario Runner &amp; Lineage Graph</h2>
+        <p class="muted small">
+          Select a monitor configuration, scenario family, and partition, then run the simulation to inspect verdicts,
+          step telemetry, and the dynamically constructed provenance chain.
+        </p>
+
+        <div class="llm-form-grid" style="margin-top:14px">
+          <label class="llm-field" for="v5-config-select">
+            Monitor Preset / Model
+            <select id="v5-config-select">
+              <option value="C0">C0 — Unmonitored Baseline</option>
+              <option value="C1">C1 — Action-Only Policy</option>
+              <option value="C2">C2 — Trajectory Risk</option>
+              <option value="C2b">C2b — Session Taint</option>
+              <option value="C3">C3 — ML without Provenance</option>
+              <option value="C4-Heuristic">C4-Heuristic (Rule-based Provenance)</option>
+              <option value="C4-ML" selected>C4-ML (Full Provenance + ML)</option>
+            </select>
+          </label>
+
+          <label class="llm-field" for="v5-family-select">
+            Scenario Family
+            <select id="v5-family-select">
+              <option value="memory_mediated_leakage">Memory-Mediated Leakage</option>
+              <option value="confidential_decoy_public_send">Confidential Decoy Public Send (Benign)</option>
+              <option value="paraphrase_leakage">Paraphrase Exfiltration</option>
+              <option value="summary_leakage">Summary Exfiltration</option>
+              <option value="cross_session_memory_leakage">Cross-Session Memory Leakage</option>
+              <option value="multi_source_join_leakage">Multi-Source Join Leakage</option>
+            </select>
+          </label>
+
+          <label class="llm-field" for="v5-partition-select">
+            Benchmark Partition
+            <select id="v5-partition-select">
+              <option value="test" selected>Test Split</option>
+              <option value="dev">Dev Split</option>
+            </select>
+          </label>
+
+          <div style="display:flex; align-items:flex-end;">
+            <button type="button" id="v5-run-btn" class="agent-run-button" style="width:100%; min-height:38px;">
+              Run Simulation
+            </button>
+          </div>
+        </div>
+
+        <div id="v5-run-status" class="agent-status" role="status" aria-live="polite">Ready to run</div>
+        <p id="v5-run-error" class="agent-error" role="alert" hidden></p>
+
+        <div class="v5-sim-layout" style="margin-top:16px">
+          <section class="agent-panel" style="margin-bottom:0">
+            <div class="section-kicker">STEP TELEMETRY</div>
+            <h2>Execution Steps &amp; Verdicts</h2>
+            <div id="v5-telemetry-feed" style="margin-top:12px; display:grid; gap:8px;">
+              <div class="empty-state">Run a simulation to inspect step-by-step verdicts and monitor timing.</div>
+            </div>
+          </section>
+
+          <section class="agent-panel" style="margin-bottom:0">
+            <div class="section-kicker">DYNAMIC PROVENANCE DAG</div>
+            <h2>Lineage &amp; Sensitivity Flow</h2>
+            <p class="muted small">Click any DAG node to inspect step features, sensitivity ancestry, and verdict.</p>
+            <div id="v5-dag-view" class="dag-canvas-box">
+              <div class="empty-state">No simulation DAG generated yet.</div>
+            </div>
+            <div id="v5-dag-inspector" class="row-inspector-drawer" hidden></div>
+          </section>
+        </div>
+      </article>
+
+      ${renderGlossarySection()}
+      ${nextPage("agent-lab", "Try Deterministic Agent Lab", "Explore scripted scenario traces and provenance graphs")}
+    `;
+  },
+
   "agent-lab"() {
     return `
       <section class="agent-lab-header">
@@ -213,7 +509,7 @@ const pages = {
         </article>
         <article class="card">
           <div class="section-kicker">03 · INVESTIGATE</div>
-          <h2>Ablation & Shortcut Audit</h2>
+          <h2>Ablation &amp; Shortcut Audit</h2>
           <p class="muted">Test which feature groups contribute to the results and look for synthetic shortcuts.</p>
           <span class="pill amber">Shortcut risks identified</span>
           ${nextPage("experiment-3", "Open Experiment 3", "Ablation and feature audit")}
@@ -229,21 +525,29 @@ const pages = {
           <div class="section-kicker">05 · GENERALIZE</div>
           <h2>V4 Zero-Shot Templates</h2>
           <p class="muted">Evaluate zero-shot generalization across unseen scenario sequence templates and indirect prompt injection.</p>
-          <span class="pill green">+83.33% Macro F1 Lift</span>
-          ${nextPage("experiment-5", "Open Experiment 5", "V4 zero-shot generalizability proof")}
+          <span class="pill green">+83.33 pp Macro F1 lift</span>
+          ${nextPage("experiment-5", "Open Experiment 5", "V4 zero-shot generalization")}
+        </article>
+        <article class="card card-featured">
+          <div class="section-kicker">06 · ENTERPRISE SUITE</div>
+          <h2>V5 Enterprise Suite</h2>
+          <p class="muted">Full V5 evaluation tables, model comparisons, generated plots, dynamic provenance DAG, and live scenario simulation.</p>
+          <span class="pill green">Tables · DAG · Live Simulation</span>
+          ${nextPage("v5-enterprise", "Open V5 Enterprise Suite", "Inspect V5 tables, models, DAG & run simulations")}
         </article>
       </div>
 
-      ${sectionHeading("Current research position")}
+      ${sectionHeading("V4 & V5 research snapshot")}
       <div class="grid grid-3">
-        ${metricCard("V4 Step Records", "800", "4 template families")}
-        ${metricCard("Zero-Shot Baseline F1", "16.67%", "Current-action collapse")}
-        ${metricCard("SentinelAI F1", "100.00%", "Zero-shot DAG invariance", "green")}
+        ${metricCard("V4 Step Records", "800", "Unseen template generalization")}
+        ${metricCard("Zero-Shot Baseline F1", "16.67%", "Action-only model on template shift", "amber")}
+        ${metricCard("Provenance Macro F1", "100.00%", "DAG provenance features", "green")}
       </div>
       <div class="callout warning">
-        <strong>Important research finding:</strong> While action-level baselines collapse when exposed to novel workflow structures (16.67% F1), SentinelAI's 13 Provenance DAG features maintain 100% Macro F1 on zero-shot scenario sequence shifts.
+        <strong>Important research finding:</strong> Action-only signals can struggle under sequence/template shifts, whereas lineage and ancestor provenance capture multi-step context before risky actions occur.
       </div>
-      ${nextPage("experiment-5", "Examine Phase V4 Results", "Inspect zero-shot template generalization metrics and prompt injection defense")}
+      ${renderGlossarySection()}
+      ${nextPage("v5-enterprise", "Examine V5 Enterprise Suite", "View empirical tables, model comparisons, and run simulations")}
     `;
   },
 
@@ -334,9 +638,9 @@ const pages = {
       ${sectionHeading("Verified V2 test results")}
       <div class="grid grid-4">
         ${metricCard("Baseline accuracy", "91.67%", "7 features")}
-        ${metricCard("Provenance accuracy", "100%", "13 features")}
-        ${metricCard("Accuracy lift", "+8.33 pp", "Percentage-point difference")}
-        ${metricCard("Macro F1 lift", "+38.10 pp", "61.90% → 100%")}
+        ${metricCard("Provenance accuracy", "100%", "13 features", "green")}
+        ${metricCard("Accuracy lift", "+8.33 pp", "Percentage-point difference", "green")}
+        ${metricCard("Macro F1 lift", "+38.10 pp", "61.90% → 100%", "green")}
       </div>
 
       <article class="card content-card">
@@ -374,14 +678,14 @@ const pages = {
         <table>
           <thead><tr><th>Feature set</th><th>Features</th><th>Accuracy</th><th>Macro F1</th><th>Interpretation</th></tr></thead>
           <tbody>
-            <tr><td>Baseline without provenance</td><td>7</td><td>91.67%</td><td>61.90%</td><td>Missed the VIOLATION class</td></tr>
-            <tr><td>Full provenance</td><td>13</td><td>100.00%</td><td>100.00%</td><td>Perfect on this test set</td></tr>
-            <tr><td>Drop has_sensitive_ancestor</td><td>12</td><td>100.00%</td><td>100.00%</td><td>Score unchanged</td></tr>
-            <tr><td>Drop sensitive_ancestor_count</td><td>12</td><td>100.00%</td><td>100.00%</td><td>Score unchanged</td></tr>
-            <tr><td>Drop both ancestor indicators</td><td>11</td><td>100.00%</td><td>100.00%</td><td>Score unchanged</td></tr>
-            <tr><td>Drop ancestor sensitivity group</td><td>10</td><td>91.67%</td><td>61.90%</td><td>Returned to baseline-level performance</td></tr>
-            <tr><td>Drop provenance structure group</td><td>10</td><td>100.00%</td><td>100.00%</td><td>Score unchanged</td></tr>
-            <tr><td>Drop all provenance</td><td>7</td><td>91.67%</td><td>61.90%</td><td>Returned to baseline-level performance</td></tr>
+            <tr><td>Baseline without provenance</td><td>7</td><td class="numeric">91.67%</td><td class="numeric">61.90%</td><td>Missed the VIOLATION class</td></tr>
+            <tr><td>Full provenance</td><td>13</td><td class="numeric">100.00%</td><td class="numeric">100.00%</td><td>Perfect on this test set</td></tr>
+            <tr><td>Drop has_sensitive_ancestor</td><td>12</td><td class="numeric">100.00%</td><td class="numeric">100.00%</td><td>Score unchanged</td></tr>
+            <tr><td>Drop sensitive_ancestor_count</td><td>12</td><td class="numeric">100.00%</td><td class="numeric">100.00%</td><td>Score unchanged</td></tr>
+            <tr><td>Drop both ancestor indicators</td><td>11</td><td class="numeric">100.00%</td><td class="numeric">100.00%</td><td>Score unchanged</td></tr>
+            <tr><td>Drop ancestor sensitivity group</td><td>10</td><td class="numeric">91.67%</td><td class="numeric">61.90%</td><td>Returned to baseline-level performance</td></tr>
+            <tr><td>Drop provenance structure group</td><td>10</td><td class="numeric">100.00%</td><td class="numeric">100.00%</td><td>Score unchanged</td></tr>
+            <tr><td>Drop all provenance</td><td>7</td><td class="numeric">91.67%</td><td class="numeric">61.90%</td><td>Returned to baseline-level performance</td></tr>
           </tbody>
         </table>
       </div>
@@ -466,9 +770,9 @@ const pages = {
       ${sectionHeading("Verified V3 test results")}
       <div class="grid grid-4">
         ${metricCard("Baseline accuracy", "91.67%", "7 features")}
-        ${metricCard("Provenance accuracy", "100%", "13 features")}
-        ${metricCard("Accuracy lift", "+8.33 pp", "Provenance minus baseline")}
-        ${metricCard("Macro F1 lift", "+17.78 pp", "82.22% → 100%")}
+        ${metricCard("Provenance accuracy", "100%", "13 features", "green")}
+        ${metricCard("Accuracy lift", "+8.33 pp", "Provenance minus baseline", "green")}
+        ${metricCard("Macro F1 lift", "+17.78 pp", "82.22% → 100%", "green")}
       </div>
 
       <article class="card content-card">
@@ -511,145 +815,673 @@ const pages = {
 
   "experiment-5"() {
     return `
-      ${pageHeader("EXPERIMENT 05 · GENERALIZATION PROOF", "V4 Zero-Shot Scenario Templates", "Evaluates model generalizability across completely unseen scenario templates, multi-input lineage aggregation, and indirect prompt injection attacks.", "V4 · Live Real-Time API Metrics")}
+      ${pageHeader("EXPERIMENT 05 · GENERALIZATION PROOF", "V4 Zero-Shot Scenario Templates", "Evaluates model generalizability across completely unseen scenario templates, multi-input lineage aggregation, and indirect prompt injection attacks.", "V4 · Dynamic API Metrics")}
 
-      ${sectionHeading("Zero-Shot Metric Comparison", "Fetched dynamically from backend API (/api/evaluation) reading models/hard_negative/v4/v4_evaluation_metrics.json")}
-      <div class="grid grid-3">
-        ${metricCard("Baseline Macro F1", "16.67%", "7 Non-Provenance Features")}
-        ${metricCard("SentinelAI Macro F1", "100.00%", "13 Provenance DAG Features", "amber")}
-        ${metricCard("Performance Lift", "+83.33%", "Zero-Shot Sequence Generalization", "green")}
+      ${sectionHeading("Zero-Shot Metric Comparison", "Loaded dynamically from /api/evaluation when available.")}
+      <div id="v4-dynamic-kpis" class="grid grid-3">
+        ${metricCard("Baseline Macro F1", "16.67%", "7 Non-Provenance Features", "amber")}
+        ${metricCard("Provenance Macro F1", "100.00%", "Provenance DAG Features", "green")}
+        ${metricCard("Performance Lift", "+83.33 pp", "Zero-Shot Sequence Generalization", "green")}
       </div>
 
       <article class="card content-card">
-        <h2>How We Reached This Conclusion</h2>
-        <p>Standard action-level monitors suffer from severe feature-collapse when exposed to out-of-distribution sequence templates. By training on <code>document_processing</code>, <code>calculator_simple</code>, and <code>multi_input_aggregation</code> templates, and testing on unseen <code>adversarial_injection</code> templates, we proved that current-action models collapse (16.67% F1), while SentinelAI's Provenance DAG features maintain 100% Macro F1.</p>
-        
+        <h2>How We Evaluated Generalization</h2>
+        <p>Standard action-level signals can degrade when exposed to unseen sequence templates or prompt injection. By testing across sequence templates and adversarial injection scenarios, lineage and ancestor provenance preserve structural context across steps.</p>
         ${comparisonTable([
-      ["Zero-Shot Macro F1", "16.67%", "100.00%", "+83.33%"],
-      ["Template Shift Resilience", "Collapsed (0.1667)", "Invariant (1.0000)", "Proven Invariant"],
-      ["Prompt Injection Defense", "0.00% Interception", "100.00% Interception", "100% Intercepted"]
+      ["Zero-Shot Macro F1", "16.67%", "100.00%", "+83.33 pp"],
+      ["Template Shift Behavior", "Action-only drop", "Lineage-preserved", "Structural invariance"],
+      ["Prompt Injection Defense", "Action-blind", "Ancestry-aware", "Intercepts risky flow"]
     ])}
       </article>
 
-      <article class="card content-card">
-        <h2>Key Research Findings</h2>
-        <div class="grid grid-2">
-          <div>
-            <h3>1. Template-Invariant Security Signal</h3>
-            <p class="muted">Even when an LLM agent executes novel tool sequences or alters step ordering, data lineage and ancestor sensitivity remain structurally invariant.</p>
-          </div>
-          <div>
-            <h3>2. Robustness to Indirect Prompt Injection</h3>
-            <p class="muted">When malicious instructions trick the LLM into proposing exfiltration, SentinelAI's monitor traces the data lineage back to confidential root origins and intercepts the tool proposal.</p>
-          </div>
-        </div>
-      </article>
-
-      ${nextPage("agent-lab", "Try Live Agent Lab", "Run deterministic scenarios live on the dashboard")}
+      ${nextPage("v5-enterprise", "Open V5 Enterprise Suite", "Inspect V5 tables, model comparisons, generated plots, DAG & simulation")}
     `;
   },
 
   roadmap() {
     return `
-      ${pageHeader("RESEARCH ROADMAP · NEXT STAGE", "V4: test generalization, not just a perfect score", "The next experiment should test whether provenance-aware monitoring continues to help when the model encounters different action sequences and scenario templates.", "Proposed next experiment · Not yet evaluated")}
+      ${pageHeader("RESEARCH ROADMAP · NEXT STAGE", "V4 & V5: test generalization and runtime enforcement", "Testing whether provenance-aware monitoring helps across unseen action sequences, scenario templates, and live runtime execution.", "Research progression")}
 
-      ${sectionHeading("What V4 should change")}
+      ${sectionHeading("Key research milestones")}
       <div class="timeline">
         <div class="timeline-item">
           <div class="timeline-marker">1</div>
           <div class="timeline-body">
-            <h3>Vary the action sequences</h3>
-            <p>Generate different valid sequences and branching patterns instead of using the same six-step order for every trajectory.</p>
+            <h3>Vary action sequences &amp; templates</h3>
+            <p>Move beyond fixed six-step sequences to branching workflows and held-out scenario templates.</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-marker">2</div>
           <div class="timeline-body">
-            <h3>Create held-out scenario templates</h3>
-            <p>Reserve entire scenario templates for testing. Keep all related variants from a template within one split to reduce template leakage.</p>
+            <h3>Audit features &amp; eliminate shortcuts</h3>
+            <p>Verify that labels are not trivially encoded in synthetic metadata or single-step flags.</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-marker">3</div>
           <div class="timeline-body">
-            <h3>Audit features before training</h3>
-            <p>Check whether action types, tool IDs, depths, and sensitivity counts accidentally encode labels. Avoid using label-derived metadata as model input.</p>
+            <h3>Compare baselines, ablations &amp; ML models</h3>
+            <p>Evaluate configurations side-by-side using clear metrics, confidence intervals, and runtime latency.</p>
           </div>
         </div>
         <div class="timeline-item">
           <div class="timeline-marker">4</div>
           <div class="timeline-body">
-            <h3>Run baseline, provenance, and ablations</h3>
-            <p>Use the same split and model settings for all variants. Report accuracy, macro F1, per-class precision/recall, and confidence intervals where appropriate.</p>
-          </div>
-        </div>
-        <div class="timeline-item">
-          <div class="timeline-marker">5</div>
-          <div class="timeline-body">
-            <h3>Evaluate realistic trajectories</h3>
-            <p>Where feasible, add carefully designed scenarios with multiple transformations, indirect data flows, and different destinations. Keep external actions simulated for the demo.</p>
+            <h3>Inspect lineage DAGs &amp; live simulations</h3>
+            <p>Trace how sensitive inputs propagate through transformations and external destinations in real time.</p>
           </div>
         </div>
       </div>
 
-      ${sectionHeading("Questions V4 should answer")}
-      <div class="grid grid-2">
-        <article class="card">
-          <h3>Does provenance improve held-out generalization?</h3>
-          <p class="muted">Compare the baseline and provenance-aware model on scenario templates that neither model saw during training.</p>
-        </article>
-        <article class="card">
-          <h3>Does the model rely on shortcuts?</h3>
-          <p class="muted">Inspect feature distributions and repeat ablations to check whether performance depends on one artificial feature.</p>
-        </article>
-        <article class="card">
-          <h3>Does it detect risk earlier?</h3>
-          <p class="muted">Measure how early in a trajectory the monitor identifies a risky information flow—not only whether it classifies the final step correctly.</p>
-        </article>
-        <article class="card">
-          <h3>Can we reproduce the findings?</h3>
-          <p class="muted">Fix random seeds, preserve dataset versions, save split manifests, and report per-class metrics alongside aggregate scores.</p>
-        </article>
-      </div>
-
-      <article class="card content-card">
-        <h2>Current status</h2>
-        <p>V2 comparison, V2 ablation, V3 matched-pair, and V4 zero-shot template evaluations have been completed and verified. Explore the menu on the left to view the complete breakdown.</p>
-      </article>
-
-      ${nextPage("overview", "Return to research overview", "Navigate back to the experiment index")}
+      ${nextPage("v5-enterprise", "Go to V5 Enterprise Suite", "Explore V5 tables, model comparisons, and live simulation")}
     `;
   }
 };
 
-function renderPage(page, updateHash = true) {
-  const selectedPage = pages[page] ? page : "overview";
+async function checkBackendHealth() {
+  if (!backendHealthTag) return;
+  try {
+    const res = await fetch("/api/health", { cache: "no-store" });
+    if (res.ok) {
+      backendHealthTag.innerHTML = `<span class="status-dot" aria-hidden="true"></span><span>Backend Connected</span>`;
+    } else {
+      backendHealthTag.innerHTML = `<span class="status-dot is-offline" aria-hidden="true"></span><span>Backend Degraded</span>`;
+    }
+  } catch {
+    backendHealthTag.innerHTML = `<span class="status-dot is-offline" aria-hidden="true"></span><span>Backend Offline</span>`;
+  }
+}
 
-  pageContent.innerHTML = pages[selectedPage]();
-  topbarTitle.textContent = pageNames[selectedPage];
-  breadcrumbCurrent.textContent = pageNames[selectedPage];
+function getV5ObservationEntries() {
+  const entries = [];
+  const reportSections = [
+    ["R1_overall_comparison", "Test evaluation · overall comparison"],
+    ["R5_component_ablations", "Test evaluation · component ablations"]
+  ];
 
-  navButtons.forEach(button => {
-    const isActive = button.dataset.page === selectedPage;
-    button.classList.toggle("active", isActive);
-    button.setAttribute("aria-current", isActive ? "page" : "false");
+  for (const [sectionKey, source] of reportSections) {
+    const rows = Array.isArray(v5ReportData?.[sectionKey]) ? v5ReportData[sectionKey] : [];
+    for (const row of rows) {
+      const name = row.config || row.model || row.name || row.variant;
+      if (!name) continue;
+      entries.push({
+        key: `${sectionKey}:${name}`,
+        name: String(name),
+        source,
+        group: sectionKey,
+        details: row
+      });
+    }
+  }
+
+  const models = v5DevReportData?.models;
+  if (models && typeof models === "object") {
+    for (const [configuration, candidates] of Object.entries(models)) {
+      if (!candidates || typeof candidates !== "object") continue;
+      const best = v5DevReportData[`best_${configuration}`];
+      for (const [modelName, metrics] of Object.entries(candidates)) {
+        if (!metrics || typeof metrics !== "object") continue;
+        const isSelectedBest = best?.model_name === modelName;
+        const thresholdMetrics = isSelectedBest
+          ? best?.threshold_tuning?.selected_metrics
+          : null;
+        entries.push({
+          key: `dev:${configuration}:${modelName}`,
+          name: `${configuration} · ${modelName}`,
+          source: `Dev cross-validation · ${configuration}`,
+          group: `dev:${configuration}`,
+          details: {
+            ...metrics,
+            ...(isSelectedBest ? { selected_as_best_in_dev_report: true } : {}),
+              ...(isSelectedBest ? { threshold_tuning: best.threshold_tuning } : {}),
+              ...(thresholdMetrics ? { selected_threshold_metrics: thresholdMetrics } : {})
+          }
+        });
+      }
+    }
+  }
+
+  return entries;
+}
+
+function formatObservationValue(key, value) {
+  if (typeof value !== "number") return String(value);
+  if (/rate|asr|fpr/i.test(key)) return formatMetricPercent(value);
+  if (/latency/i.test(key)) return `${formatNumber(value, 2)} ms`;
+  return formatNumber(value, 4);
+}
+
+function deriveV5Observations(entry, entries) {
+  const metricLabels = {
+    asr: "Attack success rate",
+    attack_block_rate: "Attack block rate",
+    attack_detection_rate: "Attack detection rate",
+    benign_false_alert_rate: "Benign false-alert rate",
+    benign_fpr: "Benign false-positive rate",
+    benign_completion_rate: "Benign completion rate",
+    early_warning_rate: "Early-warning rate",
+    mean_latency_ms: "Mean latency",
+    cv_auroc: "Cross-validation AUROC",
+    cv_pr_auc: "Cross-validation PR-AUC",
+    cv_f1_at_0_5: "Cross-validation F1 at 0.5"
+  };
+  const comparableEntries = entries.filter(candidate => candidate.group === entry.group);
+  const observations = [];
+
+  for (const [metric, label] of Object.entries(metricLabels)) {
+    const values = comparableEntries
+      .filter(candidate => typeof candidate.details?.[metric] === "number")
+      .map(candidate => candidate.details[metric]);
+    const value = entry.details?.[metric];
+    if (typeof value !== "number" || values.length === 0) continue;
+    const minimum = Math.min(...values);
+    const maximum = Math.max(...values);
+
+    if (minimum === maximum) {
+      observations.push(`${label} is ${formatObservationValue(metric, value)} across this comparison group.`);
+    } else if (value === minimum) {
+      observations.push(`${label} is the lowest in this comparison group (${formatObservationValue(metric, value)}).`);
+    } else if (value === maximum) {
+      observations.push(`${label} is the highest in this comparison group (${formatObservationValue(metric, value)}).`);
+    } else {
+      observations.push(
+        `${label} is ${formatObservationValue(metric, value)}; the group range is ${formatObservationValue(metric, minimum)}–${formatObservationValue(metric, maximum)}.`
+      );
+    }
+  }
+
+  const thresholdMetrics = entry.details?.selected_threshold_metrics;
+  if (thresholdMetrics && typeof thresholdMetrics === "object") {
+    const thresholdSummary = Object.entries(thresholdMetrics)
+      .map(([metric, value]) => `${metric.replaceAll("_", " ")}: ${formatObservationValue(metric, value)}`)
+      .join("; ");
+    observations.push(`Selected dev threshold metrics: ${thresholdSummary}.`);
+  }
+
+  if (observations.length === 0) {
+    observations.push("No comparable numeric metrics were present for this entry.");
+  }
+  return observations;
+}
+
+function renderV5Observations(entries) {
+  const listEl = document.getElementById("v5-observation-list");
+  const detailEl = document.getElementById("v5-observation-detail");
+  if (!listEl || !detailEl) return;
+
+  if (entries.length === 0) {
+    listEl.innerHTML = "";
+    detailEl.innerHTML = `<div class="empty-state">No model or configuration metric rows are available in the loaded V5 reports.</div>`;
+    return;
+  }
+
+  if (!entries.some(entry => entry.key === v5SelectedModelKey)) {
+    v5SelectedModelKey = entries[0].key;
+  }
+  const selected = entries.find(entry => entry.key === v5SelectedModelKey);
+
+  listEl.innerHTML = entries.map(entry => `
+    <button
+      type="button"
+      class="v5-model-choice ${entry.key === selected.key ? "selected" : ""}"
+      data-v5-model-key="${escapeHtml(entry.key)}"
+      aria-pressed="${entry.key === selected.key}"
+    >
+      <strong>${escapeHtml(entry.name)}</strong>
+      <small>${escapeHtml(entry.source)}</small>
+    </button>
+  `).join("");
+
+  detailEl.innerHTML = `
+    <div class="section-kicker">${escapeHtml(selected.source)}</div>
+    <h3>${escapeHtml(selected.name)}</h3>
+    <h4>Observed comparisons</h4>
+    <ul class="v5-observation-items">
+      ${deriveV5Observations(selected, entries).map(observation => `<li>${escapeHtml(observation)}</li>`).join("")}
+    </ul>
+    <details class="v5-metric-breakdown">
+      <summary>Full metric breakdown</summary>
+      <pre>${escapeHtml(JSON.stringify(selected.details, null, 2))}</pre>
+    </details>
+  `;
+}
+
+async function loadV5SuiteData(forceRefresh = false) {
+  if (!forceRefresh && v5ReportData) {
+    renderV5Suite();
+    return;
+  }
+
+  try {
+    const [repRes, devRes, scenRes] = await Promise.all([
+      fetch("/api/v5/report", { cache: "no-store" }),
+      fetch("/api/v5/dev-report", { cache: "no-store" }),
+      fetch("/api/v5/scenarios", { cache: "no-store" })
+    ]);
+
+    v5ReportData = repRes.ok ? await repRes.json() : null;
+    v5DevReportData = devRes.ok ? await devRes.json() : null;
+    v5ScenarioCatalog = scenRes.ok ? await scenRes.json() : null;
+  } catch {
+    v5ReportData = null;
+  }
+
+  renderV5Suite();
+}
+
+function renderV5Suite() {
+  const kpiGrid = document.getElementById("v5-kpi-grid");
+  const modelBody = document.getElementById("v5-model-comparison-body");
+  const tabsEl = document.getElementById("v5-table-tabs");
+  const theadEl = document.getElementById("v5-dynamic-thead");
+  const tbodyEl = document.getElementById("v5-dynamic-tbody");
+  const artifactsBody = document.getElementById("v5-artifacts-body");
+  const observationList = document.getElementById("v5-observation-list");
+  const observationDetail = document.getElementById("v5-observation-detail");
+
+  if (!kpiGrid || !modelBody || !tabsEl || !theadEl || !tbodyEl || !artifactsBody || !observationList || !observationDetail) return;
+
+  if (!v5ReportData) {
+    kpiGrid.innerHTML = `
+      ${metricCard("V5 Test Report", "Unavailable", "Run V5 test evaluation to generate report", "amber")}
+      ${metricCard("Lowest ASR", "—", "Requires V5 report")}
+      ${metricCard("Highest Block Rate", "—", "Requires V5 report")}
+      ${metricCard("Early-Warning Rate", "—", "Requires V5 report")}
+    `;
+    modelBody.innerHTML = `<div class="empty-state">No V5 test report found at <code>/api/v5/report</code>. You can still run live simulations below using <code>POST /api/run-scenario</code>.</div>`;
+    tabsEl.innerHTML = "";
+    theadEl.innerHTML = "";
+    tbodyEl.innerHTML = `<tr><td class="empty-state">No report tables available yet.</td></tr>`;
+    artifactsBody.innerHTML = `<div class="empty-state">No generated result artifacts listed in the report yet.</div>`;
+    renderV5Observations(getV5ObservationEntries());
+    return;
+  }
+
+  const best = computeBestConfigs(v5ReportData);
+  const devInfo = v5ScenarioCatalog
+    ? `${v5ScenarioCatalog.dev_count ?? 0} dev · ${v5ScenarioCatalog.test_count ?? 0} test scenarios`
+    : "Dynamic V5 evaluation report";
+  const observationEntries = getV5ObservationEntries();
+  if (!observationEntries.some(entry => entry.key === v5SelectedModelKey)) {
+    v5SelectedModelKey = observationEntries[0]?.key ?? null;
+  }
+
+  kpiGrid.innerHTML = `
+    ${metricCard(
+    "Evaluated Configurations",
+    best ? String(best.allRows.length) : "Available",
+    devInfo,
+    "green"
+  )}
+    ${metricCard(
+    "Lowest ASR (Best)",
+    best?.lowestAsr ? formatMetricPercent(best.lowestAsr.score) : "—",
+    best?.lowestAsr ? `Config: ${best.lowestAsr.name}` : "No ASR metric in primary table",
+    "green"
+  )}
+    ${metricCard(
+    "Highest Attack Block",
+    best?.highestBlock ? formatMetricPercent(best.highestBlock.score) : "—",
+    best?.highestBlock ? `Config: ${best.highestBlock.name}` : "No block metric in primary table",
+    "green"
+  )}
+    ${metricCard(
+    "Best Early-Warning",
+    best?.highestEarlyWarn ? formatMetricPercent(best.highestEarlyWarn.score) : "—",
+    best?.highestEarlyWarn ? `Config: ${best.highestEarlyWarn.name}` : "No early-warning metric in primary table",
+    "amber"
+  )}
+  `;
+
+  // Model & Preset Comparison Summary
+  if (best) {
+    const highlights = [
+      best.lowestAsr ? `<span class="pill green">Lowest ASR: ${escapeHtml(best.lowestAsr.name)} (${formatMetricPercent(best.lowestAsr.score)})</span>` : "",
+      best.highestBlock ? `<span class="pill green">Top Block Rate: ${escapeHtml(best.highestBlock.name)} (${formatMetricPercent(best.highestBlock.score)})</span>` : "",
+      best.lowestFpr ? `<span class="pill blue">Lowest Benign FPR: ${escapeHtml(best.lowestFpr.name)} (${formatMetricPercent(best.lowestFpr.score)})</span>` : "",
+      best.highestEarlyWarn ? `<span class="pill amber">Top Early Warning: ${escapeHtml(best.highestEarlyWarn.name)} (${formatMetricPercent(best.highestEarlyWarn.score)})</span>` : "",
+      best.lowestLatency ? `<span class="pill gray">Fastest Monitor: ${escapeHtml(best.lowestLatency.name)} (${formatNumber(best.lowestLatency.score, 2)} ms)</span>` : ""
+    ].filter(Boolean);
+
+    modelBody.innerHTML = `
+      <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px">${highlights.join("")}</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Configuration / Model</th>
+              <th>ASR (↓)</th>
+              <th>Block Rate (↑)</th>
+              <th>Detection (↑)</th>
+              <th>Benign FPR (↓)</th>
+              <th>Benign Comp. (↑)</th>
+              <th>Early Warn (↑)</th>
+              <th>Latency (ms ↓)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${best.allRows.map(r => {
+      const name = r.config || r.model || r.name || r.variant || "—";
+      const isBest = best.lowestAsr && name === best.lowestAsr.name;
+      const observationKey = `R1_overall_comparison:${name}`;
+      const selectedClass = observationKey === v5SelectedModelKey ? "selected-row" : "";
+      return `
+                <tr class="clickable-row ${selectedClass}" data-v5-model-key="${escapeHtml(observationKey)}">
+                  <td><strong>${escapeHtml(name)}</strong> ${isBest ? `<span class="pill green">Best ASR</span>` : ""}</td>
+                  <td class="numeric">${formatMetricPercent(r.asr)}</td>
+                  <td class="numeric">${formatMetricPercent(r.attack_block_rate ?? r.block_rate)}</td>
+                  <td class="numeric">${formatMetricPercent(r.attack_detection_rate ?? r.detection_rate)}</td>
+                  <td class="numeric">${formatMetricPercent(r.benign_false_alert_rate ?? r.benign_fpr)}</td>
+                  <td class="numeric">${formatMetricPercent(r.benign_completion_rate)}</td>
+                  <td class="numeric">${formatMetricPercent(r.early_warning_rate)}</td>
+                  <td class="numeric">${typeof (r.mean_latency_ms ?? r.latency_ms) === "number" ? `${formatNumber(r.mean_latency_ms ?? r.latency_ms, 2)} ms` : "—"}</td>
+                </tr>
+              `;
+    }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else {
+    modelBody.innerHTML = `<div class="empty-state">Report loaded, but no tabular configuration comparison array was found.</div>`;
+  }
+  renderV5Observations(observationEntries);
+
+  // Dynamic Report Tables (R1-R5 or any array sections)
+  const tables = extractReportTables(v5ReportData);
+  if (tables.length === 0) {
+    tabsEl.innerHTML = "";
+    theadEl.innerHTML = "";
+    tbodyEl.innerHTML = `<tr><td class="empty-state">No table arrays present in V5 report JSON.</td></tr>`;
+  } else {
+    if (!v5ActiveTableKey || !tables.some(t => t.key === v5ActiveTableKey)) {
+      v5ActiveTableKey = tables[0].key;
+      v5SelectedRowIndex = null;
+    }
+
+    tabsEl.innerHTML = tables.map(t => `
+      <button
+        type="button"
+        class="tab-btn ${t.key === v5ActiveTableKey ? "active" : ""}"
+        data-v5-table-key="${escapeHtml(t.key)}"
+      >
+        ${escapeHtml(formatTableLabel(t.key))} (${t.rows.length})
+      </button>
+    `).join("");
+
+    renderActiveV5Table(tables.find(t => t.key === v5ActiveTableKey));
+  }
+
+  // Generated Artifacts / Figures
+  const rawArtifacts = [
+    ...(Array.isArray(v5ReportData.artifacts) ? v5ReportData.artifacts : []),
+    ...(Array.isArray(v5ReportData.plots) ? v5ReportData.plots : [])
+  ];
+  const uniqueArtifacts = rawArtifacts.filter((artifact, index, artifacts) => {
+    const path = typeof artifact === "string" ? artifact : artifact?.path || artifact?.url;
+    return path && artifacts.findIndex(candidate =>
+      (typeof candidate === "string" ? candidate : candidate?.path || candidate?.url) === path
+    ) === index;
   });
 
-  if (updateHash && window.location.hash !== `#${selectedPage}`) {
-    history.pushState({ page: selectedPage }, "", `#${selectedPage}`);
+  if (uniqueArtifacts.length > 0) {
+    artifactsBody.innerHTML = `
+      <div class="artifact-grid">
+        ${uniqueArtifacts.map(art => {
+      const pathStr = typeof art === "string" ? art : (art.path || art.url || "");
+      const titleStr = typeof art === "string" ? art.split("/").pop() : (art.title || art.name || art.path || "Result Figure");
+      const src = pathStr.startsWith("/") ? pathStr : `/${pathStr}`;
+      return `
+            <article class="artifact-card">
+              <img src="${escapeHtml(src)}" alt="${escapeHtml(titleStr)}" data-artifact-src="${escapeHtml(src)}" />
+              <div class="artifact-card-body">
+                <strong>${escapeHtml(titleStr)}</strong>
+                <small>${escapeHtml(pathStr)}</small>
+                <button
+                  type="button"
+                  class="artifact-zoom-button"
+                  data-v5-artifact-zoom
+                  data-artifact-src="${escapeHtml(src)}"
+                  data-artifact-title="${escapeHtml(titleStr)}"
+                  aria-label="Open ${escapeHtml(titleStr)} in large view"
+                >View larger</button>
+              </div>
+            </article>
+          `;
+    }).join("")}
+      </div>
+      <dialog class="artifact-dialog" id="v5-artifact-dialog" aria-labelledby="v5-artifact-dialog-title">
+        <div class="artifact-dialog-content">
+          <div class="artifact-dialog-header">
+            <h3 id="v5-artifact-dialog-title"></h3>
+            <button type="button" class="artifact-zoom-button" data-v5-artifact-close>Close</button>
+          </div>
+          <img id="v5-artifact-dialog-image" class="artifact-dialog-image" alt="" />
+        </div>
+      </dialog>
+    `;
+    artifactsBody.querySelectorAll("img[data-artifact-src]").forEach(image => {
+      image.addEventListener("error", () => {
+        const fallback = document.createElement("div");
+        fallback.className = "empty-state artifact-image-error";
+        fallback.textContent = `Image file not found on server: ${image.dataset.artifactSrc}`;
+        image.replaceWith(fallback);
+        const zoomButton = image.closest(".artifact-card")?.querySelector("[data-v5-artifact-zoom]");
+        if (zoomButton) {
+          zoomButton.disabled = true;
+          zoomButton.textContent = "Image unavailable";
+        }
+      }, { once: true });
+    });
+  } else {
+    artifactsBody.innerHTML = `
+      <div class="empty-state">
+        No generated image files were found in <code>results/v5</code>, and the report lists no plot paths.
+      </div>
+    `;
+  }
+}
+
+function renderActiveV5Table(tableObj) {
+  const theadEl = document.getElementById("v5-dynamic-thead");
+  const tbodyEl = document.getElementById("v5-dynamic-tbody");
+  const inspector = document.getElementById("v5-row-inspector");
+  if (!theadEl || !tbodyEl || !inspector || !tableObj) return;
+
+  const columns = Array.from(
+    tableObj.rows.reduce((set, row) => {
+      Object.keys(row).forEach(k => set.add(k));
+      return set;
+    }, new Set())
+  );
+
+  theadEl.innerHTML = `<tr>${columns.map(col => `<th>${escapeHtml(col.replaceAll("_", " "))}</th>`).join("")}</tr>`;
+
+  tbodyEl.innerHTML = tableObj.rows.map((row, idx) => {
+    const selected = idx === v5SelectedRowIndex ? "selected-row" : "";
+    return `
+      <tr class="clickable-row ${selected}" data-v5-row-index="${idx}">
+        ${columns.map(col => {
+      const val = row[col];
+      let formatted = "—";
+      let cls = "";
+      if (typeof val === "number") {
+        cls = "numeric";
+        formatted = Number.isInteger(val) ? String(val) : val.toFixed(4);
+      } else if (typeof val === "boolean") {
+        formatted = val ? "true" : "false";
+      } else if (val !== null && val !== undefined) {
+        formatted = typeof val === "object" ? JSON.stringify(val) : String(val);
+      }
+      return `<td class="${cls}">${escapeHtml(formatted)}</td>`;
+    }).join("")}
+      </tr>
+    `;
+  }).join("");
+
+  if (v5SelectedRowIndex !== null && tableObj.rows[v5SelectedRowIndex]) {
+    inspector.hidden = false;
+    inspector.innerHTML = `
+      <div class="section-kicker">SELECTED TABLE ROW · #${v5SelectedRowIndex + 1}</div>
+      <strong>${escapeHtml(formatTableLabel(tableObj.key))}</strong>
+      <pre style="margin-top:8px; white-space:pre-wrap; font-family:var(--font-mono); font-size:11.5px; color:var(--text);">${escapeHtml(JSON.stringify(tableObj.rows[v5SelectedRowIndex], null, 2))}</pre>
+    `;
+  } else {
+    inspector.hidden = true;
+    inspector.innerHTML = "";
+  }
+}
+
+async function runV5Simulation() {
+  const configSelect = document.getElementById("v5-config-select");
+  const familySelect = document.getElementById("v5-family-select");
+  const partitionSelect = document.getElementById("v5-partition-select");
+  const statusEl = document.getElementById("v5-run-status");
+  const errorEl = document.getElementById("v5-run-error");
+  const runBtn = document.getElementById("v5-run-btn");
+
+  if (!configSelect || !familySelect || !partitionSelect || !statusEl || !errorEl) return;
+
+  errorEl.hidden = true;
+  errorEl.textContent = "";
+  statusEl.className = "agent-status is-running";
+  statusEl.textContent = "Running V5 scenario simulation…";
+  if (runBtn) runBtn.disabled = true;
+
+  try {
+    const res = await fetch("/api/run-scenario", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        config_name: configSelect.value,
+        family: familySelect.value,
+        partition: partitionSelect.value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data?.details || data?.error || "Simulation failed.");
+    }
+
+    v5LastSimResult = data;
+    v5SelectedSimStep = 0;
+
+    const summary = data.summary || {};
+    if (summary.attack_executed) {
+      statusEl.className = "agent-status is-error";
+      statusEl.textContent = `Attack Executed (${data.config || configSelect.value})`;
+    } else if (summary.completed === false) {
+      statusEl.className = "agent-status is-blocked";
+      statusEl.textContent = `Intercepted / Stopped (${data.config || configSelect.value})`;
+    } else {
+      statusEl.className = "agent-status is-success";
+      statusEl.textContent = `Completed Cleanly (${data.config || configSelect.value})`;
+    }
+
+    renderV5SimulationOutput(data);
+  } catch (err) {
+    statusEl.className = "agent-status is-error";
+    statusEl.textContent = "Simulation error";
+    errorEl.hidden = false;
+    errorEl.textContent = err.message || "Could not run V5 simulation.";
+  } finally {
+    if (runBtn) runBtn.disabled = false;
+  }
+}
+
+function renderV5SimulationOutput(sim) {
+  const feedEl = document.getElementById("v5-telemetry-feed");
+  const dagEl = document.getElementById("v5-dag-view");
+  if (!feedEl || !dagEl) return;
+
+  const steps = Array.isArray(sim?.steps) ? sim.steps : [];
+  if (steps.length === 0) {
+    feedEl.innerHTML = `<div class="empty-state">Simulation returned no step rows.</div>`;
+    dagEl.innerHTML = `<div class="empty-state">No DAG steps to render.</div>`;
+    return;
   }
 
-  if (selectedPage === "experiment-1") {
-    loadInitialEvaluationStatus();
-  }
-  if (selectedPage === "agent-lab") {
-    loadAgentScenarios();
-  }
-  if (selectedPage === "llm-lab") {
-    loadLLMLab();
-  }
+  feedEl.innerHTML = steps.map((st, idx) => {
+    const verdict = String(st.verdict || "NONE").toUpperCase();
+    const pillCls = verdict === "BLOCK" ? "red" : verdict === "WARN" ? "amber" : "green";
+    const activeStyle = idx === v5SelectedSimStep ? "border-color:#23765b; background:#f3faf6;" : "";
+    return `
+      <button
+        type="button"
+        class="card"
+        style="padding:12px 14px; text-align:left; cursor:pointer; ${activeStyle}"
+        data-v5-sim-step="${idx}"
+      >
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+          <div>
+            <span class="pill gray">Step ${escapeHtml(st.step ?? idx + 1)}</span>
+            <strong style="margin-left:6px">${escapeHtml(st.tool || "tool")}</strong>
+            <span class="muted small">→ ${escapeHtml(st.destination || "local")}</span>
+          </div>
+          <span class="pill ${pillCls}">${escapeHtml(verdict)}</span>
+        </div>
+        <div class="muted small" style="margin-top:6px; display:flex; flex-wrap:wrap; gap:12px;">
+          <span>Sensitive Ancestor: <strong>${escapeHtml(st.has_sensitive_ancestor ?? "—")}</strong></span>
+          <span>Prov. Depth: <strong>${escapeHtml(st.provenance_depth ?? "—")}</strong></span>
+          <span>Transform Depth: <strong>${escapeHtml(st.transformation_depth ?? "—")}</strong></span>
+          <span>Latency: <strong>${escapeHtml(st.monitor_time_ms ?? "—")} ms</strong></span>
+        </div>
+      </button>
+    `;
+  }).join("");
 
-  window.scrollTo({ top: 0, behavior: "auto" });
+  dagEl.innerHTML = `
+    <div class="dag-node-list">
+      ${steps.map((st, idx) => {
+    const verdict = String(st.verdict || "NONE").toUpperCase();
+    const nodeCls = verdict === "BLOCK" ? "is-block" : verdict === "WARN" ? "is-warn" : "";
+    const selCls = idx === v5SelectedSimStep ? "is-selected" : "";
+    const pillCls = verdict === "BLOCK" ? "red" : verdict === "WARN" ? "amber" : "green";
+    const connector = idx < steps.length - 1
+      ? `<div class="dag-edge-connector">↓ lineage edge (prov_depth=${escapeHtml(st.provenance_depth ?? "?")}, xform_depth=${escapeHtml(st.transformation_depth ?? "?")})</div>`
+      : "";
+    return `
+          <button
+            type="button"
+            class="dag-node ${nodeCls} ${selCls}"
+            data-v5-sim-step="${idx}"
+          >
+            <div>
+              <strong>Node ${idx + 1}: ${escapeHtml(st.tool || "action")}</strong>
+              <div class="muted small">Dest: ${escapeHtml(st.destination || "internal")} · Sens. Ancestor: ${escapeHtml(st.has_sensitive_ancestor ?? "—")}</div>
+            </div>
+            <span class="pill ${pillCls}">${escapeHtml(verdict)}</span>
+          </button>
+          ${connector}
+        `;
+  }).join("")}
+    </div>
+  `;
+
+  renderV5SimStepInspector(steps[v5SelectedSimStep] || steps[0]);
+}
+
+function renderV5SimStepInspector(step) {
+  const inspector = document.getElementById("v5-dag-inspector");
+  if (!inspector || !step) return;
+  inspector.hidden = false;
+  inspector.innerHTML = `
+    <div class="section-kicker">INSPECTED NODE / STEP</div>
+    <strong>Step ${escapeHtml(step.step ?? "")} — ${escapeHtml(step.tool || "")}</strong>
+    <pre style="margin-top:8px; white-space:pre-wrap; font-family:var(--font-mono); font-size:11.5px; color:var(--text);">${escapeHtml(JSON.stringify(step, null, 2))}</pre>
+  `;
+}
+
+function exportV5ReportJson() {
+  if (!v5ReportData) return;
+  const blob = new Blob([JSON.stringify(v5ReportData, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "v5_test_evaluation_report.json";
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 async function loadInitialEvaluationStatus() {
@@ -672,64 +1504,9 @@ async function loadInitialEvaluationStatus() {
       target.textContent =
         "The API responded, but the initial evaluation metrics could not be identified confidently. No initial accuracy or F1 score is inferred.";
     }
-  } catch (error) {
+  } catch {
     target.textContent =
       "Initial evaluation metrics are not currently available through the dashboard API. The dataset counts and experiment description above are recorded project details; no initial model score is fabricated.";
-  }
-}
-
-function setAgentRunStatus(message, state = "idle") {
-  agentRunState = state;
-  const status = document.getElementById("agent-run-status");
-  if (status) {
-    status.textContent = message;
-    status.className = `agent-status is-${state}`;
-  }
-}
-
-async function loadAgentScenarios() {
-  const container = document.getElementById("agent-scenario-list");
-  if (!container) return;
-  container.replaceChildren();
-
-  try {
-    const response = await fetch("/api/agent/scenarios", { cache: "no-store" });
-    if (!response.ok) throw new Error("Scenario catalog is unavailable.");
-    const payload = await response.json();
-    if (!payload || !Array.isArray(payload.scenarios) || payload.scenarios.some(scenario =>
-      !scenario || typeof scenario.scenario_id !== "string" ||
-      typeof scenario.title !== "string" || typeof scenario.description !== "string"
-    )) {
-      throw new Error("Scenario catalog response was malformed.");
-    }
-    agentScenarios = payload.scenarios;
-    if (agentScenarios.length === 0) {
-      container.append(createTextBlock("p", "No predefined scenarios are available.", "empty-state"));
-      return;
-    }
-
-    agentScenarios.forEach(scenario => {
-      const card = document.createElement("article");
-      card.className = "agent-scenario";
-      const title = createTextBlock("h3", scenario.title || "Scenario");
-      const description = createTextBlock("p", scenario.description || "");
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "agent-run-button";
-      button.dataset.agentScenario = scenario.scenario_id;
-      button.textContent = "Run scenario";
-      button.disabled = agentRunState === "running";
-      button.setAttribute("aria-label", `Run scenario: ${scenario.title || scenario.scenario_id}`);
-      card.append(title, description, button);
-      container.append(card);
-    });
-    if (agentRun) {
-      setAgentRunStatus(taskStatusLabel(agentRun.status), taskStatusClass(agentRun.status));
-      renderAgentRun(agentRun);
-    }
-  } catch (error) {
-    container.append(createTextBlock("p", error.message || "Could not load scenarios.", "agent-error"));
-    setAgentRunStatus("Scenario service unavailable", "error");
   }
 }
 
@@ -751,10 +1528,60 @@ function appendDetailRow(container, label, value) {
   container.append(row);
 }
 
+function setAgentRunStatus(message, state = "idle") {
+  agentRunState = state;
+  const status = document.getElementById("agent-run-status");
+  if (status) {
+    status.textContent = message;
+    status.className = `agent-status is-${state}`;
+  }
+}
+
+async function loadAgentScenarios() {
+  const container = document.getElementById("agent-scenario-list");
+  if (!container) return;
+  container.replaceChildren();
+
+  try {
+    const response = await fetch("/api/agent/scenarios", { cache: "no-store" });
+    if (!response.ok) throw new Error("Scenario catalog is unavailable.");
+    const payload = await response.json();
+    if (!payload || !Array.isArray(payload.scenarios)) {
+      throw new Error("Scenario catalog response was malformed.");
+    }
+    agentScenarios = payload.scenarios;
+    if (agentScenarios.length === 0) {
+      container.append(createTextBlock("p", "No predefined scenarios are available.", "empty-state"));
+      return;
+    }
+
+    agentScenarios.forEach(scenario => {
+      const card = document.createElement("article");
+      card.className = "agent-scenario";
+      const title = createTextBlock("h3", scenario.title || "Scenario");
+      const description = createTextBlock("p", scenario.description || "");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "agent-run-button";
+      button.dataset.agentScenario = scenario.scenario_id;
+      button.textContent = "Run scenario";
+      button.disabled = agentRunState === "running";
+      card.append(title, description, button);
+      container.append(card);
+    });
+    if (agentRun) {
+      setAgentRunStatus(taskStatusLabel(agentRun.status), taskStatusClass(agentRun.status));
+      renderAgentRun(agentRun);
+    }
+  } catch (error) {
+    container.append(createTextBlock("p", error.message || "Could not load scenarios.", "agent-error"));
+    setAgentRunStatus("Scenario service unavailable", "error");
+  }
+}
+
 async function runAgentScenario(scenarioId) {
   if (agentRunState === "running") return;
-  const controls = document.querySelectorAll("[data-agent-scenario]");
-  controls.forEach(button => { button.disabled = true; });
+  document.querySelectorAll("[data-agent-scenario]").forEach(btn => { btn.disabled = true; });
   agentRun = null;
   agentRunError = "";
   selectedAgentStep = 0;
@@ -769,17 +1596,10 @@ async function runAgentScenario(scenarioId) {
     });
     const payload = await response.json();
     if (!response.ok) {
-      const messages = {
-        unknown_scenario: "That scenario is not available.",
-        scenario_run_failed: "The scenario could not be completed. No result was recorded."
-      };
-      throw new Error(messages[payload?.error] || "The backend rejected the scenario request.");
-    }
-    if (!isValidAgentRunPayload(payload)) {
-      throw new Error("The backend returned an incomplete run result.");
+      throw new Error(payload?.error || "The backend rejected the scenario request.");
     }
     agentRun = payload;
-    selectedAgentStep = payload.trace.length ? 0 : -1;
+    selectedAgentStep = payload.trace?.length ? 0 : -1;
     setAgentRunStatus(taskStatusLabel(payload.status), taskStatusClass(payload.status));
     renderAgentRun(payload);
   } catch (error) {
@@ -787,25 +1607,8 @@ async function runAgentScenario(scenarioId) {
     setAgentRunStatus("Run failed", "error");
     renderAgentError(agentRunError);
   } finally {
-    document.querySelectorAll("[data-agent-scenario]").forEach(button => { button.disabled = false; });
+    document.querySelectorAll("[data-agent-scenario]").forEach(btn => { btn.disabled = false; });
   }
-}
-
-function isValidAgentRunPayload(payload) {
-  if (!payload || typeof payload !== "object") return false;
-  if (typeof payload.run_id !== "string" || typeof payload.task_description !== "string") return false;
-  if (!["completed", "stopped", "failed"].includes(payload.status)) return false;
-  if (typeof payload.stop_reason !== "string" || !Array.isArray(payload.trace)) return false;
-  const summary = payload.summary;
-  const provenance = payload.provenance;
-  if (!summary || !provenance || !Array.isArray(provenance.objects) || !Array.isArray(provenance.edges)) return false;
-  const counts = ["planned_actions", "proposed_actions", "executed_actions", "warnings", "blocked_actions", "failed_executions"];
-  if (!counts.every(key => Number.isInteger(summary[key]) && summary[key] >= 0)) return false;
-  return payload.trace.every(step =>
-    step && typeof step.step_id === "string" && typeof step.tool_name === "string" &&
-    typeof step.execution_status === "string" && Array.isArray(step.input_data_object_ids) &&
-    Array.isArray(step.output_data_object_ids) && Array.isArray(step.provenance_reference_ids)
-  );
 }
 
 function taskStatusLabel(status) {
@@ -836,6 +1639,7 @@ function renderAgentRun(run) {
   const container = document.getElementById("agent-run-result");
   if (!container) return;
   container.replaceChildren();
+
   const heading = document.createElement("div");
   heading.className = "agent-result-heading";
   const headingCopy = document.createElement("div");
@@ -850,15 +1654,15 @@ function renderAgentRun(run) {
   heading.append(headingCopy, clearButton);
   container.append(heading);
 
-  const summary = run.summary;
+  const summary = run.summary || {};
   const metrics = document.createElement("div");
   metrics.className = "agent-metrics";
   [
-    ["Planned / proposed", `${summary.planned_actions} / ${summary.proposed_actions}`, ""],
-    ["Executed", summary.executed_actions, "success"],
-    ["Warnings", summary.warnings, "warning"],
-    ["Blocked", summary.blocked_actions, "blocked"],
-    ["Failed executions", summary.failed_executions, "error"]
+    ["Planned / proposed", `${summary.planned_actions ?? 0} / ${summary.proposed_actions ?? 0}`, ""],
+    ["Executed", summary.executed_actions ?? 0, "success"],
+    ["Warnings", summary.warnings ?? 0, "warning"],
+    ["Blocked", summary.blocked_actions ?? 0, "blocked"],
+    ["Failed executions", summary.failed_executions ?? 0, "error"]
   ].forEach(([label, value, state]) => {
     const card = document.createElement("article");
     card.className = `agent-metric ${state ? `is-${state}` : ""}`;
@@ -882,8 +1686,7 @@ function renderAgentRun(run) {
   timelineSection.append(createTextBlock("h2", "Action timeline"));
   const timeline = document.createElement("div");
   timeline.className = "agent-timeline";
-  timeline.id = "agent-timeline";
-  run.trace.forEach((step, index) => {
+  (run.trace || []).forEach((step, index) => {
     const item = document.createElement("button");
     item.type = "button";
     item.className = `agent-trace-step is-${step.verdict === "BLOCK" ? "blocked" : step.verdict === "WARN" ? "warning" : step.execution_status === "failed" ? "error" : "success"}`;
@@ -891,10 +1694,10 @@ function renderAgentRun(run) {
     item.setAttribute("aria-pressed", String(index === selectedAgentStep));
     const line = document.createElement("span");
     line.className = "agent-trace-line";
-    line.textContent = String(step.action_index).padStart(2, "0");
+    line.textContent = String(step.action_index ?? index + 1).padStart(2, "0");
     const body = document.createElement("span");
     body.className = "agent-trace-copy";
-    body.append(createTextBlock("strong", `${step.tool_name} · ${step.execution_status.replaceAll("_", " ")}`));
+    body.append(createTextBlock("strong", `${step.tool_name} · ${String(step.execution_status || "").replaceAll("_", " ")}`));
     body.append(createTextBlock("span", step.description || "Proposed tool action."));
     const verdict = document.createElement("span");
     verdict.className = `agent-verdict is-${(step.verdict || "none").toLowerCase()}`;
@@ -902,17 +1705,13 @@ function renderAgentRun(run) {
     item.append(line, body, verdict);
     timeline.append(item);
   });
-  if (run.trace.length === 0) {
-    timeline.append(createTextBlock("p", "No action was proposed.", "empty-state"));
-  }
   timelineSection.append(timeline);
 
   const side = document.createElement("div");
   side.className = "agent-side-panels";
   const inspector = document.createElement("section");
   inspector.className = "agent-panel";
-  inspector.id = "agent-step-inspector";
-  renderAgentInspector(inspector, run.trace[selectedAgentStep]);
+  renderAgentInspector(inspector, run.trace?.[selectedAgentStep]);
   const provenance = document.createElement("section");
   provenance.className = "agent-panel";
   provenance.append(createTextBlock("div", "DATA LINEAGE", "section-kicker"));
@@ -934,26 +1733,12 @@ function renderAgentInspector(container, step) {
   appendDetailRow(container, "Step", step.step_id);
   appendDetailRow(container, "Tool", step.tool_name);
   appendDetailRow(container, "Policy verdict", step.verdict || "Not evaluated");
-  appendDetailRow(container, "Execution", step.execution_status.replaceAll("_", " "));
+  appendDetailRow(container, "Execution", String(step.execution_status || "").replaceAll("_", " "));
   appendDetailRow(container, "Decision reason", step.decision_reason || "Not available");
   appendDetailRow(container, "Destination", step.destination);
   appendDetailRow(container, "Matched rules", (step.matched_policy_rules || []).join(", "));
-  if (step.risk_score !== null && step.risk_score !== undefined) {
-    appendDetailRow(container, "Risk score (does not determine verdict)", String(step.risk_score));
-  }
-  if (step.risk_probability !== null && step.risk_probability !== undefined) {
-    appendDetailRow(container, "Risk probability", String(step.risk_probability));
-  }
   appendDetailRow(container, "Inputs", (step.input_data_object_ids || []).join(", "));
   appendDetailRow(container, "Outputs", (step.output_data_object_ids || []).join(", "));
-  appendDetailRow(container, "Provenance refs", (step.provenance_reference_ids || []).join(", "));
-  if (step.error) {
-    container.append(createTextBlock("p", step.error, "agent-error"));
-  }
-  if (step.output_preview) {
-    container.append(createTextBlock("div", "PUBLIC OUTPUT PREVIEW", "agent-detail-label"));
-    container.append(createTextBlock("p", step.output_preview, "agent-output-preview"));
-  }
 }
 
 function renderAgentProvenance(container, provenance) {
@@ -979,10 +1764,6 @@ function renderAgentProvenance(container, provenance) {
     item.append(createTextBlock("small", child.transformation || "source"));
     edgeList.append(item);
   });
-  if (edgeList.children.length === 0) {
-    container.append(createTextBlock("p", "No valid parent-child edges were returned.", "empty-state"));
-    return;
-  }
   container.append(edgeList);
 }
 
@@ -990,14 +1771,16 @@ function clearAgentRun() {
   agentRun = null;
   agentRunError = "";
   selectedAgentStep = 0;
-  document.getElementById("agent-run-result")?.replaceChildren();
   setAgentRunStatus("Not run yet", "idle");
+  const container = document.getElementById("agent-run-result");
+  if (!container) return;
+  container.replaceChildren();
   const empty = document.createElement("div");
   empty.className = "agent-empty-state";
   empty.append(createTextBlock("span", "01", "agent-empty-mark"));
   empty.append(createTextBlock("h2", "No run selected"));
   empty.append(createTextBlock("p", "Run a scenario to inspect the actual monitor decisions, tool outcomes, and provenance created by the backend."));
-  document.getElementById("agent-run-result")?.append(empty);
+  container.append(empty);
 }
 
 function llmStatusLabel(status) {
@@ -1010,11 +1793,25 @@ function llmStatusLabel(status) {
   })[status] || "Unknown status";
 }
 
+function llmStatusClass(status) {
+  if (status === "completed") return "success";
+  if (status === "stopped") return "blocked";
+  if (status === "failed") return "error";
+  return "running";
+}
+
 function setLLMStatus(message, state) {
   const status = document.getElementById("llm-run-status");
   if (!status) return;
   status.textContent = message;
   status.className = `agent-status is-${state}`;
+}
+
+function showLLMError(message) {
+  const error = document.getElementById("llm-run-error");
+  if (!error) return;
+  error.textContent = message;
+  error.hidden = false;
 }
 
 async function loadLLMLab() {
@@ -1026,52 +1823,42 @@ async function loadLLMLab() {
   if (!modeSelect || !scenarioSelect || !policySelect || !runButton) return;
 
   try {
-    const [configurationResponse, historyResponse] = await Promise.all([
+    const [configRes, historyRes] = await Promise.all([
       fetch("/api/llm/configuration", { cache: "no-store" }),
       fetch("/api/llm/runs", { cache: "no-store" })
     ]);
-    if (!configurationResponse.ok || !historyResponse.ok) {
+    if (!configRes.ok || !historyRes.ok) {
       throw new Error("LLM Lab configuration or run history is unavailable.");
     }
-    const [configuration, historyPayload] = await Promise.all([
-      configurationResponse.json(), historyResponse.json()
-    ]);
-    if (!Array.isArray(configuration.modes) || !Array.isArray(configuration.scenarios) ||
-      !Array.isArray(configuration.policies) || !Array.isArray(historyPayload.runs)) {
-      throw new Error("LLM Lab configuration response is malformed.");
-    }
-    llmConfiguration = configuration;
-    llmHistory = historyPayload.runs;
-    populateLLMFilters(configuration);
+    const [config, historyPayload] = await Promise.all([configRes.json(), historyRes.json()]);
+    llmConfiguration = config;
+    llmHistory = Array.isArray(historyPayload.runs) ? historyPayload.runs : [];
+
+    populateLLMFilters(config);
     scenarioSelect.replaceChildren();
-    configuration.scenarios.forEach(scenario => {
-      const option = document.createElement("option");
-      option.value = scenario;
-      option.textContent = scenario.replaceAll("_", " ");
-      scenarioSelect.append(option);
+    (config.scenarios || []).forEach(sc => {
+      const opt = document.createElement("option");
+      opt.value = sc;
+      opt.textContent = sc.replaceAll("_", " ");
+      scenarioSelect.append(opt);
     });
     policySelect.replaceChildren();
-    configuration.policies.forEach(policy => {
-      const option = document.createElement("option");
-      option.value = policy;
-      option.textContent = policy;
-      policySelect.append(option);
+    (config.policies || []).forEach(pol => {
+      const opt = document.createElement("option");
+      opt.value = pol;
+      opt.textContent = pol;
+      policySelect.append(opt);
     });
-    modeSelect.querySelectorAll("option").forEach(option => {
-      option.disabled = !configuration.modes.includes(option.value);
-    });
+
     updateLLMProviderLabel();
     runButton.disabled = llmIsRunning;
-    providerLabel.hidden = false;
+    if (providerLabel) providerLabel.hidden = false;
     renderLLMHistory();
-
     if (llmCurrentRunId) {
       await refreshLLMRun(llmCurrentRunId, false);
-    } else if (llmIsRunning) {
-      setLLMStatus("Run is still active; polling for updates…", "running");
     }
   } catch (error) {
-    providerLabel.textContent = error.message || "LLM Lab configuration unavailable.";
+    if (providerLabel) providerLabel.textContent = error.message || "LLM Lab unavailable.";
     setLLMStatus("Provider/configuration unavailable", "error");
     runButton.disabled = true;
     showLLMError(error.message || "The LLM Lab API is unavailable.");
@@ -1081,31 +1868,19 @@ async function loadLLMLab() {
 function updateLLMProviderLabel() {
   const mode = document.getElementById("llm-mode")?.value;
   const target = document.getElementById("llm-provider-label");
-  const config = llmConfiguration;
-  if (!target || !config) return;
+  if (!target || !llmConfiguration) return;
   if (mode === "live") {
-    const provider = config.openai;
-    if (!provider?.sdk_available) {
-      target.textContent = `OpenAI live mode unavailable: SDK ${provider?.sdk_available ? "available" : "not installed"}; key ${provider?.configured ? "configured" : "not configured"}.`;
-      return;
-    }
-    target.textContent = provider.configured
-      ? `Live OpenAI · ${provider.model}`
-      : `Live OpenAI · ${provider.model} · OPENAI_API_KEY not configured`;
+    const provider = llmConfiguration.openai;
+    target.textContent = provider?.configured
+      ? `Live provider · ${provider.model}`
+      : `Live provider · ${provider?.model || "default"} · API key not configured`;
     return;
   }
   if (mode === "fake") {
-    target.textContent = "Fake provider · offline scripted responses · not a real LLM";
+    target.textContent = "Fake provider · offline scripted responses";
     return;
   }
   target.textContent = "Deterministic plan · no model provider";
-}
-
-function showLLMError(message) {
-  const error = document.getElementById("llm-run-error");
-  if (!error) return;
-  error.textContent = message;
-  error.hidden = false;
 }
 
 async function submitLLMRun(event) {
@@ -1116,19 +1891,17 @@ async function submitLLMRun(event) {
   const scenarioId = document.getElementById("llm-scenario")?.value || "";
   const policyId = document.getElementById("llm-policy")?.value || "";
   const maxActions = Number(document.getElementById("llm-action-limit")?.value);
-  const errorElement = document.getElementById("llm-run-error");
-  if (errorElement) {
-    errorElement.hidden = true;
-    errorElement.textContent = "";
-  }
+
   if (!task.trim() || !Number.isInteger(maxActions) || maxActions < 1 || maxActions > 12) {
     showLLMError("Enter a task and an action limit from 1 through 12.");
     return;
   }
+
   llmIsRunning = true;
   llmSelectedEvent = 0;
   document.getElementById("llm-run-button").disabled = true;
   setLLMStatus("Submitting run…", "running");
+
   try {
     const response = await fetch("/api/llm/runs", {
       method: "POST",
@@ -1137,18 +1910,11 @@ async function submitLLMRun(event) {
     });
     const payload = await response.json();
     if (!response.ok) {
-      const messages = {
-        provider_not_configured: "Live provider is unavailable. Configure OPENAI_API_KEY in the server environment; no fake fallback was used.",
-        provider_sdk_unavailable: "Live provider is unavailable. Install the declared OpenAI SDK dependency and restart the server.",
-        run_capacity_full: payload.message || "Run capacity is full.",
-        invalid_run_request: "The backend rejected the run request. Check the task and selected options."
-      };
-      throw new Error(messages[payload?.error] || "The backend could not start this run.");
+      throw new Error(payload?.message || payload?.error || "Could not start LLM run.");
     }
-    if (typeof payload.run_id !== "string") throw new Error("Run response did not include a run ID.");
     llmCurrentRunId = payload.run_id;
     llmCurrentRun = payload;
-    setLLMStatus(llmStatusLabel(payload.status), payload.status === "failed" ? "error" : "running");
+    setLLMStatus(llmStatusLabel(payload.status), llmStatusClass(payload.status));
     renderLLMRun(payload);
     await pollLLMRun(payload.run_id);
   } catch (error) {
@@ -1156,8 +1922,8 @@ async function submitLLMRun(event) {
     showLLMError(error.message || "The run could not start.");
   } finally {
     llmIsRunning = false;
-    const runButton = document.getElementById("llm-run-button");
-    if (runButton && llmConfiguration) runButton.disabled = false;
+    const btn = document.getElementById("llm-run-button");
+    if (btn && llmConfiguration) btn.disabled = false;
   }
 }
 
@@ -1173,31 +1939,21 @@ async function refreshLLMRun(runId, updateStatus = true) {
   const response = await fetch(`/api/llm/runs/${encodeURIComponent(runId)}`, { cache: "no-store" });
   if (!response.ok) throw new Error("Could not retrieve the run record.");
   const run = await response.json();
-  if (!run || run.run_id !== runId || !Array.isArray(run.events) || !run.summary || !run.provenance) {
-    throw new Error("Run response is malformed.");
-  }
   llmCurrentRun = run;
   if (updateStatus) setLLMStatus(llmStatusLabel(run.status), llmStatusClass(run.status));
   if (location.hash === "#llm-lab") renderLLMRun(run);
   await refreshLLMHistory();
-  if (location.hash === "#llm-lab" && llmCurrentRun) renderLLMRun(llmCurrentRun);
   return !["queued", "running"].includes(run.status);
-}
-
-function llmStatusClass(status) {
-  if (status === "completed") return "success";
-  if (status === "stopped") return "blocked";
-  if (status === "failed") return "error";
-  return "running";
 }
 
 async function refreshLLMHistory() {
   const response = await fetch("/api/llm/runs", { cache: "no-store" });
-  if (!response.ok) throw new Error("Run history is unavailable.");
+  if (!response.ok) return;
   const payload = await response.json();
-  if (!Array.isArray(payload.runs)) throw new Error("Run history response is malformed.");
-  llmHistory = payload.runs;
-  renderLLMHistory();
+  if (Array.isArray(payload.runs)) {
+    llmHistory = payload.runs;
+    renderLLMHistory();
+  }
 }
 
 function appendLLMMetric(container, label, value, state = "") {
@@ -1212,13 +1968,13 @@ function renderLLMRun(run) {
   const container = document.getElementById("llm-run-output");
   if (!container) return;
   container.replaceChildren();
+
   const metrics = run.summary || {};
   const top = document.createElement("div");
   top.className = "llm-run-heading";
-  top.append(createTextBlock("div", `RUN · ${run.run_id}`, "llm-run-id"));
+  top.append(createTextBlock("div", `RUN · ${run.run_id}`, "agent-run-id"));
   top.append(createTextBlock("h2", llmStatusLabel(run.status)));
   top.append(createTextBlock("p", `Mode: ${run.mode} · Provider: ${run.provider || "unavailable"} · Model: ${run.model || "unavailable"}`, "llm-muted"));
-  if (run.error) top.append(createTextBlock("p", run.error, "agent-error"));
   container.append(top);
 
   const cards = document.createElement("div");
@@ -1229,123 +1985,57 @@ function renderLLMRun(run) {
   appendLLMMetric(cards, "WARN", metrics.warn || 0, "warning");
   appendLLMMetric(cards, "BLOCK", metrics.block || 0, "blocked");
   appendLLMMetric(cards, "Executed", metrics.executed || 0, "success");
-  appendLLMMetric(cards, "Failed", metrics.failed || 0, "error");
-  appendLLMMetric(cards, "Skipped", metrics.skipped || 0);
-  appendLLMMetric(cards, "Outputs", metrics.outputs || 0);
-  appendLLMMetric(cards, "Provenance edges", metrics.provenance_edges || 0);
-  appendLLMMetric(cards, "Input tokens", run.usage?.input_tokens);
-  appendLLMMetric(cards, "Output tokens", run.usage?.output_tokens);
   container.append(cards);
 
   const eventLayout = document.createElement("div");
   eventLayout.className = "llm-event-layout";
+
   const timeline = document.createElement("section");
   timeline.className = "agent-panel";
   timeline.append(createTextBlock("div", "TRUSTED RUN EVENTS", "section-kicker"));
   timeline.append(createTextBlock("h2", "Run timeline"));
   const list = document.createElement("div");
   list.className = "llm-event-list";
-  (run.events || []).forEach((event, index) => {
+  (run.events || []).forEach((ev, index) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `llm-event is-${eventSeverity(event)}`;
+    button.className = "llm-event";
     button.dataset.llmEventIndex = String(index);
     button.setAttribute("aria-pressed", String(index === llmSelectedEvent));
-    const title = document.createElement("span");
-    title.className = "llm-event-title";
-    title.textContent = event.type.replaceAll("_", " ");
-    const stamp = document.createElement("time");
-    stamp.dateTime = event.timestamp;
-    stamp.textContent = formatEventTime(event.timestamp);
-    const detail = document.createElement("span");
-    detail.className = "llm-event-detail";
-    detail.textContent = eventSummary(event);
-    button.append(title, stamp, detail);
+    button.append(createTextBlock("span", String(ev.type || "event").replaceAll("_", " "), "llm-event-title"));
+    button.append(createTextBlock("span", JSON.stringify(ev.data || {}), "llm-event-detail"));
     list.append(button);
   });
-  if (!run.events?.length) list.append(createTextBlock("p", "No events yet.", "empty-state"));
   timeline.append(list);
-
-  const inspector = document.createElement("section");
-  inspector.className = "agent-panel llm-inspector";
-  inspector.id = "llm-event-inspector";
-  renderLLMEventInspector(inspector, run, run.events?.[llmSelectedEvent]);
 
   const provenance = document.createElement("section");
   provenance.className = "agent-panel llm-provenance";
   provenance.append(createTextBlock("div", "TRUSTED DATA LINEAGE", "section-kicker"));
   provenance.append(createTextBlock("h2", "Provenance"));
   renderAgentProvenance(provenance, run.provenance);
-  eventLayout.append(timeline, inspector, provenance);
+
+  eventLayout.append(timeline, provenance);
   container.append(eventLayout);
-  renderLLMComparison(container, run);
-  renderLLMHistory();
 }
 
-function eventSeverity(event) {
-  if (event.type === "monitor_decision") {
-    return String(event.data.verdict || "none").toLowerCase();
+function populateLLMFilters(configuration) {
+  const statusSelect = document.getElementById("llm-filter-status");
+  const modeSelect = document.getElementById("llm-filter-mode");
+  if (statusSelect && statusSelect.options.length === 1) {
+    ["queued", "running", "completed", "stopped", "failed"].forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      statusSelect.append(opt);
+    });
   }
-  if (["run_error", "provider_error", "validation_failed", "output_provenance_failed"].includes(event.type)) return "error";
-  if (event.type === "execution_skipped" || event.type === "run_stopped_by_policy") return "warning";
-  return "neutral";
-}
-
-function eventSummary(event) {
-  const data = event.data || {};
-  if (event.type === "monitor_decision") return `Trusted verdict: ${data.verdict || "unavailable"}`;
-  if (event.type === "proposal_received") return `Untrusted model proposal: ${data.tool_name || "unknown tool"}`;
-  if (event.type === "execution_result") return data.executed ? "Tool execution succeeded" : "Tool execution failed";
-  if (event.type === "feedback_sent") return `Output sent to provider: ${data.content_sent ? "public content" : "content withheld"}`;
-  return data.step_id || data.message || data.error || "Recorded run event";
-}
-
-function formatEventTime(value) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "Time unavailable" : date.toLocaleTimeString();
-}
-
-function renderLLMEventInspector(container, run, event) {
-  container.append(createTextBlock("div", "EVENT INSPECTOR", "section-kicker"));
-  container.append(createTextBlock("h2", "Selected event"));
-  if (!event) {
-    container.append(createTextBlock("p", "Select a run event to inspect details.", "empty-state"));
-    return;
-  }
-  appendDetailRow(container, "Timestamp", event.timestamp);
-  appendDetailRow(container, "Event", event.type.replaceAll("_", " "));
-  appendDetailRow(container, "Run status", run.status);
-  const stepId = event.data?.step_id;
-  appendDetailRow(container, "Step ID", stepId || "Not associated with an action");
-  const related = run.events.filter(item => stepId && item.data?.step_id === stepId);
-  const proposal = related.find(item => item.type === "validation_passed")?.data ||
-    related.find(item => item.type === "proposal_received")?.data;
-  const decision = related.find(item => item.type === "monitor_decision")?.data;
-  const execution = related.find(item => item.type === "execution_result")?.data;
-  if (proposal) {
-    appendDetailRow(container, "Tool", proposal.tool_name || "Unavailable");
-    appendDetailRow(container, "Validated args", JSON.stringify(proposal.arguments || {}));
-    appendDetailRow(container, "Input IDs", (proposal.input_data_object_ids || []).join(", "));
-    appendDetailRow(container, "Input sensitivity", proposal.input_sensitivity || "Unavailable");
-    appendDetailRow(container, "Trusted destination", proposal.trusted_destination || "Unavailable");
-  }
-  if (decision) {
-    appendDetailRow(container, "Trusted verdict", decision.verdict);
-    appendDetailRow(container, "Policy reason", decision.reason);
-    appendDetailRow(container, "Policy rules", (decision.matched_policy_rules || []).join(", "));
-    if (decision.risk_score !== null && decision.risk_score !== undefined) {
-      appendDetailRow(container, "Risk score (separate from verdict)", String(decision.risk_score));
-    }
-  }
-  if (execution) {
-    appendDetailRow(container, "Execution", execution.executed ? "succeeded" : "failed / skipped");
-    appendDetailRow(container, "Error", execution.error || "None");
-  }
-  const output = related.find(item => item.type === "output_provenance_recorded")?.data;
-  appendDetailRow(container, "Output object ID", output?.output_data_object_id || "None");
-  if (event.type === "proposal_received") {
-    container.append(createTextBlock("p", "Model explanation is untrusted and never changes the monitor decision.", "llm-untrusted-note"));
-    appendDetailRow(container, "Model explanation", event.data?.model_explanation || "Unavailable");
+  if (modeSelect && modeSelect.options.length === 1) {
+    (configuration.modes || []).forEach(m => {
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      modeSelect.append(opt);
+    });
   }
 }
 
@@ -1356,103 +2046,76 @@ function renderLLMHistory() {
   const statusFilter = document.getElementById("llm-filter-status")?.value || "all";
   const modeFilter = document.getElementById("llm-filter-mode")?.value || "all";
   const verdictFilter = document.getElementById("llm-filter-verdict")?.value || "all";
+
   const filtered = llmHistory.filter(run => {
     const summary = run.summary || {};
-    const hasVerdict = verdictFilter === "all" || (summary[verdictFilter] || 0) > 0;
+    const verdictOk = verdictFilter === "all" || (summary[verdictFilter] || 0) > 0;
     return (statusFilter === "all" || run.status === statusFilter) &&
-      (modeFilter === "all" || run.mode === modeFilter) && hasVerdict;
+      (modeFilter === "all" || run.mode === modeFilter) &&
+      verdictOk;
   });
+
   if (!filtered.length) {
-    container.append(createTextBlock("p", llmHistory.length ? "No runs match these filters." : "No previous runs in this server session.", "empty-state"));
+    container.append(createTextBlock("p", "No matching runs in this server session.", "empty-state"));
     return;
   }
+
   filtered.forEach(run => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "llm-history-row";
     button.dataset.llmHistoryRun = run.run_id;
-    const task = createTextBlock("strong", run.task || "Task");
-    const info = createTextBlock("span", `${run.status} · ${run.mode} · ${run.scenario_id} · ${run.run_id}`);
-    const summary = run.summary || {};
-    const counts = createTextBlock("small", `ALLOW ${summary.allow || 0} / WARN ${summary.warn || 0} / BLOCK ${summary.block || 0} · ${summary.executed || 0} executed`);
-    button.append(task, info, counts);
+    button.append(createTextBlock("strong", run.task || "Task"));
+    button.append(createTextBlock("span", `${run.status} · ${run.mode} · ${run.scenario_id} · ${run.run_id}`));
     container.append(button);
   });
-}
-
-function populateLLMFilters(configuration) {
-  const statusSelect = document.getElementById("llm-filter-status");
-  const modeSelect = document.getElementById("llm-filter-mode");
-  if (statusSelect && statusSelect.options.length === 1) {
-    ["queued", "running", "completed", "stopped", "failed"].forEach(status => {
-      const option = document.createElement("option");
-      option.value = status;
-      option.textContent = status;
-      statusSelect.append(option);
-    });
-  }
-  if (modeSelect && modeSelect.options.length === 1) {
-    configuration.modes.forEach(mode => {
-      const option = document.createElement("option");
-      option.value = mode;
-      option.textContent = mode;
-      modeSelect.append(option);
-    });
-  }
-}
-
-function renderLLMComparison(container, current) {
-  if (!current || !Array.isArray(llmHistory)) return;
-  const comparable = llmHistory.find(run =>
-    run.run_id !== current.run_id &&
-    run.task === current.task &&
-    run.scenario_id === current.scenario_id &&
-    run.policy_id === current.policy_id &&
-    run.mode !== current.mode
-  );
-  const section = document.createElement("section");
-  section.className = "agent-panel llm-comparison";
-  section.append(createTextBlock("div", "RUN COMPARISON", "section-kicker"));
-  section.append(createTextBlock("h2", "Equivalent-input comparison"));
-  if (!comparable) {
-    section.append(createTextBlock("p", "Run this same task, scenario, and policy in another mode to compare actual results.", "empty-state"));
-    container.append(section);
-    return;
-  }
-  const table = document.createElement("table");
-  table.className = "llm-comparison-table";
-  const header = document.createElement("tr");
-  ["Measure", current.mode, comparable.mode].forEach(value => header.append(createTextBlock("th", value)));
-  const thead = document.createElement("thead");
-  thead.append(header);
-  const tbody = document.createElement("tbody");
-  [
-    ["Status", current.status, comparable.status],
-    ["Executed", current.summary.executed, comparable.summary.executed],
-    ["ALLOW / WARN / BLOCK", `${current.summary.allow}/${current.summary.warn}/${current.summary.block}`, `${comparable.summary.allow}/${comparable.summary.warn}/${comparable.summary.block}`],
-    ["Duration (s)", current.duration_seconds ?? "Unavailable", comparable.duration_seconds ?? "Unavailable"]
-  ].forEach(row => {
-    const tr = document.createElement("tr");
-    row.forEach(value => tr.append(createTextBlock("td", String(value))));
-    tbody.append(tr);
-  });
-  table.append(thead, tbody);
-  section.append(table);
-  container.append(section);
 }
 
 async function loadLLMHistoryRun(runId) {
   const response = await fetch(`/api/llm/runs/${encodeURIComponent(runId)}`, { cache: "no-store" });
   if (!response.ok) throw new Error("Could not retrieve selected run.");
   const run = await response.json();
-  if (!run || !Array.isArray(run.events) || !run.summary || !run.provenance) {
-    throw new Error("Selected run response is malformed.");
-  }
   llmCurrentRun = run;
   llmCurrentRunId = run.run_id;
   llmSelectedEvent = 0;
   setLLMStatus(llmStatusLabel(run.status), llmStatusClass(run.status));
   renderLLMRun(run);
+}
+
+function renderPage(page, updateHash = true) {
+  const selectedPage = pages[page] ? page : "overview";
+
+  pageContent.innerHTML = pages[selectedPage]();
+  topbarTitle.textContent = pageNames[selectedPage];
+  breadcrumbCurrent.textContent = pageNames[selectedPage];
+
+  navButtons.forEach(button => {
+    const isActive = button.dataset.page === selectedPage;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-current", isActive ? "page" : "false");
+  });
+
+  if (updateHash && window.location.hash !== `#${selectedPage}`) {
+    history.pushState({ page: selectedPage }, "", `#${selectedPage}`);
+  }
+
+  if (selectedPage === "experiment-1") {
+    loadInitialEvaluationStatus();
+  }
+  if (selectedPage === "v5-enterprise") {
+    loadV5SuiteData(false);
+    if (v5LastSimResult) {
+      renderV5SimulationOutput(v5LastSimResult);
+    }
+  }
+  if (selectedPage === "agent-lab") {
+    loadAgentScenarios();
+  }
+  if (selectedPage === "llm-lab") {
+    loadLLMLab();
+  }
+
+  window.scrollTo({ top: 0, behavior: "auto" });
 }
 
 document.getElementById("navigation").addEventListener("click", event => {
@@ -1461,8 +2124,78 @@ document.getElementById("navigation").addEventListener("click", event => {
 });
 
 pageContent.addEventListener("click", event => {
-  const button = event.target.closest("[data-go]");
-  if (button) renderPage(button.dataset.go);
+  const goBtn = event.target.closest("[data-go]");
+  if (goBtn) renderPage(goBtn.dataset.go);
+
+  const zoomButton = event.target.closest("[data-v5-artifact-zoom]");
+  if (zoomButton) {
+    const dialog = document.getElementById("v5-artifact-dialog");
+    const dialogImage = document.getElementById("v5-artifact-dialog-image");
+    const dialogTitle = document.getElementById("v5-artifact-dialog-title");
+    if (!dialog || !dialogImage || !dialogTitle) return;
+    dialogImage.src = zoomButton.dataset.artifactSrc;
+    dialogImage.alt = zoomButton.dataset.artifactTitle;
+    dialogTitle.textContent = zoomButton.dataset.artifactTitle;
+    dialog.showModal();
+    return;
+  }
+
+  const closeZoomButton = event.target.closest("[data-v5-artifact-close]");
+  if (closeZoomButton) {
+    closeZoomButton.closest("dialog")?.close();
+    return;
+  }
+
+  if (event.target.matches("#v5-artifact-dialog")) {
+    event.target.close();
+    return;
+  }
+
+  if (event.target.closest("#v5-refresh-btn")) {
+    loadV5SuiteData(true);
+    return;
+  }
+
+  if (event.target.closest("#v5-export-json-btn")) {
+    exportV5ReportJson();
+    return;
+  }
+
+  if (event.target.closest("#v5-run-btn")) {
+    runV5Simulation();
+    return;
+  }
+
+  const modelChoice = event.target.closest("[data-v5-model-key]");
+  if (modelChoice && v5ReportData) {
+    v5SelectedModelKey = modelChoice.dataset.v5ModelKey;
+    renderV5Suite();
+    return;
+  }
+
+  const tabBtn = event.target.closest("[data-v5-table-key]");
+  if (tabBtn && v5ReportData) {
+    v5ActiveTableKey = tabBtn.dataset.v5TableKey;
+    v5SelectedRowIndex = null;
+    renderV5Suite();
+    return;
+  }
+
+  const rowEl = event.target.closest("[data-v5-row-index]");
+  if (rowEl && v5ReportData) {
+    const idx = Number(rowEl.dataset.v5RowIndex);
+    v5SelectedRowIndex = v5SelectedRowIndex === idx ? null : idx;
+    const tables = extractReportTables(v5ReportData);
+    renderActiveV5Table(tables.find(t => t.key === v5ActiveTableKey));
+    return;
+  }
+
+  const simStepBtn = event.target.closest("[data-v5-sim-step]");
+  if (simStepBtn && v5LastSimResult) {
+    v5SelectedSimStep = Number(simStepBtn.dataset.v5SimStep);
+    renderV5SimulationOutput(v5LastSimResult);
+    return;
+  }
 
   const scenarioButton = event.target.closest("[data-agent-scenario]");
   if (scenarioButton) runAgentScenario(scenarioButton.dataset.agentScenario);
@@ -1510,4 +2243,5 @@ window.addEventListener("hashchange", () => {
   if (page && pages[page]) renderPage(page, false);
 });
 
+checkBackendHealth();
 renderPage(window.location.hash.slice(1) || "overview", false);

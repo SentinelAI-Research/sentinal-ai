@@ -9,15 +9,19 @@ class MemoryDataObjectService:
     Creates provenance-aware DataObjects for memory writes
     and memory retrievals.
 
-    Memory is treated as a transformation layer rather than
-    as a provenance reset.
+    When inherit_sensitivity=False (used in C1, C2, C3, and R5.2 memory ablation),
+    memory writes/retrievals reset sensitivity to PUBLIC instead of propagating
+    parent sensitivity labels.
     """
 
     def __init__(
         self,
         provenance_graph: ProvenanceGraph,
+        *,
+        inherit_sensitivity: bool = True,
     ):
         self.provenance_graph = provenance_graph
+        self.inherit_sensitivity = inherit_sensitivity
 
     def create_memory_object(
         self,
@@ -30,7 +34,6 @@ class MemoryDataObjectService:
         """
         Create a DataObject representing data persisted into memory.
         """
-
         if not content:
             raise ValueError("Memory content cannot be empty.")
 
@@ -38,9 +41,13 @@ class MemoryDataObjectService:
             raise ValueError("Memory object must have at least one parent.")
 
         parent_objects = self.provenance_graph.resolve_objects(parent_object_ids)
-        object_sensitivity = most_sensitive_sensitivity(
-            [parent.sensitivity for parent in parent_objects] + [sensitivity]
-        )
+        if self.inherit_sensitivity:
+            object_sensitivity = most_sensitive_sensitivity(
+                [parent.sensitivity for parent in parent_objects] + [sensitivity]
+            )
+        else:
+            object_sensitivity = "PUBLIC"
+
         if self.provenance_graph.has_object(object_id):
             raise ValueError(f"Data object already exists: {object_id}")
 
@@ -76,14 +83,17 @@ class MemoryDataObjectService:
         Create a DataObject representing information retrieved
         from memory.
         """
-
         if not content:
             raise ValueError("Retrieved memory content cannot be empty.")
 
         memory_object = self.provenance_graph.get_object(memory_object_id)
-        object_sensitivity = most_sensitive_sensitivity(
-            [memory_object.sensitivity, sensitivity]
-        )
+        if self.inherit_sensitivity:
+            object_sensitivity = most_sensitive_sensitivity(
+                [memory_object.sensitivity, sensitivity]
+            )
+        else:
+            object_sensitivity = "PUBLIC"
+
         if self.provenance_graph.has_object(object_id):
             raise ValueError(f"Data object already exists: {object_id}")
 

@@ -1,0 +1,18 @@
+{
+  "benchmark_version": "v5",
+  "generated_at": "2026-11-18T13:20:02.885415+00:00",
+  "git_commit": "b9c999513487abca13408f41ea731a801fe85e39",
+  "seed": 42,
+  "sensitivity_assignment_rule": "Deterministic corpus-and-content rule: Enron executive/finance records or documents matching confidential markers -> CONFIDENTIAL; AMI meeting transcripts and internal status records -> INTERNAL; public announcements and general reference documents -> PUBLIC.",
+  "uniqueness_verified": true,
+  "total_scenarios": 700,
+  "dev_count": 210,
+  "test_count": 490,
+  "attack_count": 400,
+  "benign_count": 300,
+  "dev_source_doc_count": 33,
+  "test_source_doc_count": 78,
+  "source_doc_overlap_count": 0,
+  "dev_sha256": "8e786e13fdf46cf8be8d7b620c93a80d02d4130cda6b5e238c578ab4beed7171",
+  "test_sha256": "a8349a2b1d4f912b83f6892cf296302c82b941b56eb6c06736a4ee4fb5ff9428"
+}
