@@ -1200,8 +1200,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
 
 def main() -> None:
     port = int(os.environ.get("PORT", "5000"))
-    server = ThreadingHTTPServer(("127.0.0.1", port), DashboardHandler)
-    print(f"SentinelAI dashboard running at http://127.0.0.1:{port}")
+    host = os.environ.get("HOST", "0.0.0.0")
+    server = ThreadingHTTPServer((host, port), DashboardHandler)
+    print(f"SentinelAI dashboard running at http://{host}:{port}")
     print(f"Repository root: {ROOT}")
 
     try:
