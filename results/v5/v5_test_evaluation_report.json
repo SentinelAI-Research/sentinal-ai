@@ -38,9 +38,9 @@
       ],
       "mean_lead_steps": 0.0,
       "median_lead_steps": 0.0,
-      "mean_latency_ms": 0.2633,
-      "median_latency_ms": 0.1866,
-      "p95_latency_ms": 0.5849
+      "mean_latency_ms": 0.3962,
+      "median_latency_ms": 0.2369,
+      "p95_latency_ms": 0.7559
     },
     {
       "config": "C1",
@@ -79,9 +79,9 @@
       ],
       "mean_lead_steps": 0.0,
       "median_lead_steps": 0.0,
-      "mean_latency_ms": 0.3307,
-      "median_latency_ms": 0.261,
-      "p95_latency_ms": 0.6801
+      "mean_latency_ms": 0.4222,
+      "median_latency_ms": 0.2651,
+      "p95_latency_ms": 0.8275
     },
     {
       "config": "C2",
@@ -120,9 +120,9 @@
       ],
       "mean_lead_steps": 0.0,
       "median_lead_steps": 0.0,
-      "mean_latency_ms": 0.3103,
-      "median_latency_ms": 0.246,
-      "p95_latency_ms": 0.6499
+      "mean_latency_ms": 0.3547,
+      "median_latency_ms": 0.2469,
+      "p95_latency_ms": 0.7067
     },
     {
       "config": "C2b",
@@ -161,9 +161,9 @@
       ],
       "mean_lead_steps": 0.0,
       "median_lead_steps": 0.0,
-      "mean_latency_ms": 0.3247,
-      "median_latency_ms": 0.2669,
-      "p95_latency_ms": 0.692
+      "mean_latency_ms": 0.2832,
+      "median_latency_ms": 0.2067,
+      "p95_latency_ms": 0.6141
     },
     {
       "config": "C3",
@@ -202,9 +202,9 @@
       ],
       "mean_lead_steps": 0.0373,
       "median_lead_steps": 0.0,
-      "mean_latency_ms": 72.6865,
-      "median_latency_ms": 68.0181,
-      "p95_latency_ms": 92.7015
+      "mean_latency_ms": 68.96,
+      "median_latency_ms": 65.5281,
+      "p95_latency_ms": 84.0698
     },
     {
       "config": "C4-Heuristic",
@@ -243,9 +243,9 @@
       ],
       "mean_lead_steps": 2.7464,
       "median_lead_steps": 2.5,
-      "mean_latency_ms": 0.3296,
-      "median_latency_ms": 0.2645,
-      "p95_latency_ms": 0.686
+      "mean_latency_ms": 0.306,
+      "median_latency_ms": 0.2163,
+      "p95_latency_ms": 0.6487
     },
     {
       "config": "C4-ML",
@@ -284,9 +284,9 @@
       ],
       "mean_lead_steps": 3.6179,
       "median_lead_steps": 3.5,
-      "mean_latency_ms": 4.8039,
-      "median_latency_ms": 4.6683,
-      "p95_latency_ms": 7.3234
+      "mean_latency_ms": 6.1391,
+      "median_latency_ms": 5.5944,
+      "p95_latency_ms": 11.3349
     }
   ],
   "R2_by_attack_family": {
@@ -885,6 +885,3740 @@
       }
     }
   },
+  "step_classification_metrics": {
+    "C0": {
+      "binary_risk_detection": {
+        "accuracy": 0.516328,
+        "macro_precision": 0.258164,
+        "macro_recall": 0.5,
+        "macro_f1": 0.340512,
+        "weighted_f1": 0.351632,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1333,
+              0
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.414731,
+        "macro_precision": 0.138244,
+        "macro_recall": 0.333333,
+        "macro_f1": 0.195435,
+        "weighted_f1": 0.243159,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.414731,
+            "recall": 1.0,
+            "f1": 0.586304,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              280,
+              0,
+              0
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    "C1": {
+      "binary_risk_detection": {
+        "accuracy": 0.530842,
+        "macro_precision": 0.761966,
+        "macro_recall": 0.515004,
+        "macro_f1": 0.372936,
+        "weighted_f1": 0.383212,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1293,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.969992,
+              0.030008
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.429245,
+        "macro_precision": 0.473613,
+        "macro_recall": 0.380952,
+        "macro_f1": 0.280794,
+        "weighted_f1": 0.271078,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.420839,
+            "recall": 1.0,
+            "f1": 0.592381,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 0.142857,
+            "f1": 0.25,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              240,
+              0,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.857143,
+              0.0,
+              0.142857
+            ]
+          ]
+        }
+      }
+    },
+    "C2": {
+      "binary_risk_detection": {
+        "accuracy": 0.530842,
+        "macro_precision": 0.761966,
+        "macro_recall": 0.515004,
+        "macro_f1": 0.372936,
+        "weighted_f1": 0.383212,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1293,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.969992,
+              0.030008
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.429245,
+        "macro_precision": 0.473613,
+        "macro_recall": 0.380952,
+        "macro_f1": 0.280794,
+        "weighted_f1": 0.271078,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.420839,
+            "recall": 1.0,
+            "f1": 0.592381,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 0.142857,
+            "f1": 0.25,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              240,
+              0,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.857143,
+              0.0,
+              0.142857
+            ]
+          ]
+        }
+      }
+    },
+    "C2b": {
+      "binary_risk_detection": {
+        "accuracy": 0.602685,
+        "macro_precision": 0.718472,
+        "macro_recall": 0.590269,
+        "macro_f1": 0.527235,
+        "weighted_f1": 0.533402,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1381,
+              42
+            ],
+            [
+              1053,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.970485,
+              0.029515
+            ],
+            [
+              0.789947,
+              0.210053
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.501089,
+        "macro_precision": 0.440636,
+        "macro_recall": 0.654418,
+        "macro_f1": 0.515277,
+        "weighted_f1": 0.349817,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.452342,
+            "recall": 0.963255,
+            "f1": 0.6156,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 0.869565,
+            "recall": 1.0,
+            "f1": 0.930233,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1101,
+              0,
+              42
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.963255,
+              0.0,
+              0.036745
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    "C3": {
+      "binary_risk_detection": {
+        "accuracy": 0.566763,
+        "macro_precision": 0.771876,
+        "macro_recall": 0.552138,
+        "macro_f1": 0.446657,
+        "weighted_f1": 0.455076,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1194,
+              139
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.895724,
+              0.104276
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.43106,
+        "macro_precision": 0.495755,
+        "macro_recall": 0.382203,
+        "macro_f1": 0.288321,
+        "weighted_f1": 0.280925,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.43676,
+            "recall": 1.0,
+            "f1": 0.607979,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.050505,
+            "recall": 0.003751,
+            "f1": 0.006983,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 0.142857,
+            "f1": 0.25,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1328,
+              5,
+              0
+            ],
+            [
+              146,
+              94,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.996249,
+              0.003751,
+              0.0
+            ],
+            [
+              0.521429,
+              0.335714,
+              0.142857
+            ]
+          ]
+        }
+      }
+    },
+    "C4-Heuristic": {
+      "binary_risk_detection": {
+        "accuracy": 0.826197,
+        "macro_precision": 0.848727,
+        "macro_recall": 0.821991,
+        "macro_f1": 0.821882,
+        "weighted_f1": 0.822787,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1353,
+              70
+            ],
+            [
+              409,
+              924
+            ]
+          ],
+          "normalized": [
+            [
+              0.950808,
+              0.049192
+            ],
+            [
+              0.306827,
+              0.693173
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.724601,
+        "macro_precision": 0.836976,
+        "macro_recall": 0.807293,
+        "macro_f1": 0.789313,
+        "weighted_f1": 0.712303,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.608967,
+            "recall": 0.938758,
+            "f1": 0.738726,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.901961,
+            "recall": 0.483121,
+            "f1": 0.629213,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1073,
+              70,
+              0
+            ],
+            [
+              689,
+              644,
+              0
+            ],
+            [
+              0,
+              0,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.938758,
+              0.061242,
+              0.0
+            ],
+            [
+              0.516879,
+              0.483121,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    "C4-ML": {
+      "binary_risk_detection": {
+        "accuracy": 0.846517,
+        "macro_precision": 0.858374,
+        "macro_recall": 0.843518,
+        "macro_f1": 0.844298,
+        "weighted_f1": 0.844905,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1331,
+              92
+            ],
+            [
+              331,
+              1002
+            ]
+          ],
+          "normalized": [
+            [
+              0.935348,
+              0.064652
+            ],
+            [
+              0.248312,
+              0.751688
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.74492,
+        "macro_precision": 0.839783,
+        "macro_recall": 0.820382,
+        "macro_f1": 0.807314,
+        "weighted_f1": 0.737688,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.632371,
+            "recall": 0.91951,
+            "f1": 0.749376,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.886978,
+            "recall": 0.541635,
+            "f1": 0.672566,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1051,
+              92,
+              0
+            ],
+            [
+              611,
+              722,
+              0
+            ],
+            [
+              0,
+              0,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.91951,
+              0.08049,
+              0.0
+            ],
+            [
+              0.458365,
+              0.541635,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "test_auc_metrics": {
+    "test_step_rows": 2756,
+    "binary_target_definition": "ATTACK steps at step >= 2 or at violation_step; BENIGN steps 0",
+    "operating_thresholds": {
+      "C3": 0.85,
+      "C4": 0.85
+    },
+    "C3": {
+      "HistGradientBoosting": {
+        "test_roc_auc": 0.807823,
+        "test_pr_auc": 0.775078,
+        "test_f1_at_selected_threshold": 0.25438,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.481495,
+          "macro_precision": 0.747959,
+          "macro_recall": 0.518027,
+          "macro_f1": 0.457782,
+          "weighted_f1": 0.357761,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.443878,
+              "recall": 0.989501,
+              "f1": 0.612842,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 0.8,
+              "recall": 0.036009,
+              "f1": 0.068916,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 0.528571,
+              "f1": 0.691589,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1131,
+                12,
+                0
+              ],
+              [
+                1285,
+                48,
+                0
+              ],
+              [
+                132,
+                0,
+                148
+              ]
+            ],
+            "normalized": [
+              [
+                0.989501,
+                0.010499,
+                0.0
+              ],
+              [
+                0.963991,
+                0.036009,
+                0.0
+              ],
+              [
+                0.471429,
+                0.0,
+                0.528571
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1411,
+              12
+            ],
+            [
+              1137,
+              196
+            ]
+          ],
+          "normalized": [
+            [
+              0.991567,
+              0.008433
+            ],
+            [
+              0.852963,
+              0.147037
+            ]
+          ]
+        }
+      },
+      "LogisticRegression": {
+        "test_roc_auc": 0.768556,
+        "test_pr_auc": 0.729585,
+        "test_f1_at_selected_threshold": 0.084527,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.434688,
+          "macro_precision": 0.784258,
+          "macro_recall": 0.352563,
+          "macro_f1": 0.237355,
+          "weighted_f1": 0.287434,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.422948,
+              "recall": 0.9965,
+              "f1": 0.593848,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 0.929825,
+              "recall": 0.03976,
+              "f1": 0.076259,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 0.021429,
+              "f1": 0.041958,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1139,
+                4,
+                0
+              ],
+              [
+                1280,
+                53,
+                0
+              ],
+              [
+                274,
+                0,
+                6
+              ]
+            ],
+            "normalized": [
+              [
+                0.9965,
+                0.0035,
+                0.0
+              ],
+              [
+                0.96024,
+                0.03976,
+                0.0
+              ],
+              [
+                0.978571,
+                0.0,
+                0.021429
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1419,
+              4
+            ],
+            [
+              1274,
+              59
+            ]
+          ],
+          "normalized": [
+            [
+              0.997189,
+              0.002811
+            ],
+            [
+              0.955739,
+              0.044261
+            ]
+          ]
+        }
+      },
+      "MLPClassifier": {
+        "test_roc_auc": 0.779146,
+        "test_pr_auc": 0.753041,
+        "test_f1_at_selected_threshold": 0.175103,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.460813,
+          "macro_precision": 0.807827,
+          "macro_recall": 0.402666,
+          "macro_f1": 0.326535,
+          "weighted_f1": 0.336522,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.434716,
+              "recall": 0.999125,
+              "f1": 0.605836,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 0.988764,
+              "recall": 0.066017,
+              "f1": 0.123769,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 0.142857,
+              "f1": 0.25,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1142,
+                1,
+                0
+              ],
+              [
+                1245,
+                88,
+                0
+              ],
+              [
+                240,
+                0,
+                40
+              ]
+            ],
+            "normalized": [
+              [
+                0.999125,
+                0.000875,
+                0.0
+              ],
+              [
+                0.933983,
+                0.066017,
+                0.0
+              ],
+              [
+                0.857143,
+                0.0,
+                0.142857
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1422,
+              1
+            ],
+            [
+              1205,
+              128
+            ]
+          ],
+          "normalized": [
+            [
+              0.999297,
+              0.000703
+            ],
+            [
+              0.903976,
+              0.096024
+            ]
+          ]
+        }
+      },
+      "RandomForest": {
+        "test_roc_auc": 0.813811,
+        "test_pr_auc": 0.78919,
+        "test_f1_at_selected_threshold": 0.290839,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.496734,
+          "macro_precision": 0.813701,
+          "macro_recall": 0.515821,
+          "macro_f1": 0.46662,
+          "weighted_f1": 0.386846,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.451741,
+              "recall": 0.999125,
+              "f1": 0.622174,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 0.989362,
+              "recall": 0.069767,
+              "f1": 0.130343,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 0.478571,
+              "f1": 0.647343,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1142,
+                1,
+                0
+              ],
+              [
+                1240,
+                93,
+                0
+              ],
+              [
+                146,
+                0,
+                134
+              ]
+            ],
+            "normalized": [
+              [
+                0.999125,
+                0.000875,
+                0.0
+              ],
+              [
+                0.930233,
+                0.069767,
+                0.0
+              ],
+              [
+                0.521429,
+                0.0,
+                0.478571
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1422,
+              1
+            ],
+            [
+              1106,
+              227
+            ]
+          ],
+          "normalized": [
+            [
+              0.999297,
+              0.000703
+            ],
+            [
+              0.829707,
+              0.170293
+            ]
+          ]
+        }
+      }
+    },
+    "C4": {
+      "HistGradientBoosting": {
+        "test_roc_auc": 0.975865,
+        "test_pr_auc": 0.973219,
+        "test_f1_at_selected_threshold": 0.801259,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.738026,
+          "macro_precision": 0.870956,
+          "macro_recall": 0.819455,
+          "macro_f1": 0.796191,
+          "weighted_f1": 0.720818,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.612869,
+              "recall": 1.0,
+              "f1": 0.759973,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 1.0,
+              "recall": 0.458365,
+              "f1": 0.628601,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1143,
+                0,
+                0
+              ],
+              [
+                722,
+                611,
+                0
+              ],
+              [
+                0,
+                0,
+                280
+              ]
+            ],
+            "normalized": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.541635,
+                0.458365,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              442,
+              891
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.331583,
+              0.668417
+            ]
+          ]
+        }
+      },
+      "LogisticRegression": {
+        "test_roc_auc": 0.966662,
+        "test_pr_auc": 0.968527,
+        "test_f1_at_selected_threshold": 0.765741,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.714804,
+          "macro_precision": 0.864178,
+          "macro_recall": 0.803451,
+          "macro_f1": 0.775352,
+          "weighted_f1": 0.691671,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.592535,
+              "recall": 1.0,
+              "f1": 0.744141,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 1.0,
+              "recall": 0.410353,
+              "f1": 0.581915,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1143,
+                0,
+                0
+              ],
+              [
+                786,
+                547,
+                0
+              ],
+              [
+                0,
+                0,
+                280
+              ]
+            ],
+            "normalized": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.589647,
+                0.410353,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              506,
+              827
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.379595,
+              0.620405
+            ]
+          ]
+        }
+      },
+      "MLPClassifier": {
+        "test_roc_auc": 0.975503,
+        "test_pr_auc": 0.974304,
+        "test_f1_at_selected_threshold": 0.828571,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.754717,
+          "macro_precision": 0.86752,
+          "macro_recall": 0.830126,
+          "macro_f1": 0.811882,
+          "weighted_f1": 0.742987,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.631254,
+              "recall": 0.982502,
+              "f1": 0.768652,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 0.971306,
+              "recall": 0.507877,
+              "f1": 0.666995,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1123,
+                20,
+                0
+              ],
+              [
+                656,
+                677,
+                0
+              ],
+              [
+                0,
+                0,
+                280
+              ]
+            ],
+            "normalized": [
+              [
+                0.982502,
+                0.017498,
+                0.0
+              ],
+              [
+                0.492123,
+                0.507877,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1403,
+              20
+            ],
+            [
+              376,
+              957
+            ]
+          ],
+          "normalized": [
+            [
+              0.985945,
+              0.014055
+            ],
+            [
+              0.282071,
+              0.717929
+            ]
+          ]
+        }
+      },
+      "RandomForest": {
+        "test_roc_auc": 0.971437,
+        "test_pr_auc": 0.970281,
+        "test_f1_at_selected_threshold": 0.801259,
+        "selected_threshold": 0.85,
+        "step_classification_metrics": {
+          "accuracy": 0.738026,
+          "macro_precision": 0.870956,
+          "macro_recall": 0.819455,
+          "macro_f1": 0.796191,
+          "weighted_f1": 0.720818,
+          "per_class": {
+            "SAFE": {
+              "precision": 0.612869,
+              "recall": 1.0,
+              "f1": 0.759973,
+              "support": 1143
+            },
+            "EARLY_RISK": {
+              "precision": 1.0,
+              "recall": 0.458365,
+              "f1": 0.628601,
+              "support": 1333
+            },
+            "VIOLATION": {
+              "precision": 1.0,
+              "recall": 1.0,
+              "f1": 1.0,
+              "support": 280
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "SAFE",
+              "EARLY_RISK",
+              "VIOLATION"
+            ],
+            "counts": [
+              [
+                1143,
+                0,
+                0
+              ],
+              [
+                722,
+                611,
+                0
+              ],
+              [
+                0,
+                0,
+                280
+              ]
+            ],
+            "normalized": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.541635,
+                0.458365,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              442,
+              891
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.331583,
+              0.668417
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "confusion_matrices": {
+    "C0": {
+      "binary_risk_detection": {
+        "accuracy": 0.516328,
+        "macro_precision": 0.258164,
+        "macro_recall": 0.5,
+        "macro_f1": 0.340512,
+        "weighted_f1": 0.351632,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1333,
+              0
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.414731,
+        "macro_precision": 0.138244,
+        "macro_recall": 0.333333,
+        "macro_f1": 0.195435,
+        "weighted_f1": 0.243159,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.414731,
+            "recall": 1.0,
+            "f1": 0.586304,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              280,
+              0,
+              0
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ]
+          ]
+        }
+      }
+    },
+    "C1": {
+      "binary_risk_detection": {
+        "accuracy": 0.530842,
+        "macro_precision": 0.761966,
+        "macro_recall": 0.515004,
+        "macro_f1": 0.372936,
+        "weighted_f1": 0.383212,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1293,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.969992,
+              0.030008
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.429245,
+        "macro_precision": 0.473613,
+        "macro_recall": 0.380952,
+        "macro_f1": 0.280794,
+        "weighted_f1": 0.271078,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.420839,
+            "recall": 1.0,
+            "f1": 0.592381,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 0.142857,
+            "f1": 0.25,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              240,
+              0,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.857143,
+              0.0,
+              0.142857
+            ]
+          ]
+        }
+      }
+    },
+    "C2": {
+      "binary_risk_detection": {
+        "accuracy": 0.530842,
+        "macro_precision": 0.761966,
+        "macro_recall": 0.515004,
+        "macro_f1": 0.372936,
+        "weighted_f1": 0.383212,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1293,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.969992,
+              0.030008
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.429245,
+        "macro_precision": 0.473613,
+        "macro_recall": 0.380952,
+        "macro_f1": 0.280794,
+        "weighted_f1": 0.271078,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.420839,
+            "recall": 1.0,
+            "f1": 0.592381,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 0.142857,
+            "f1": 0.25,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              240,
+              0,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.857143,
+              0.0,
+              0.142857
+            ]
+          ]
+        }
+      }
+    },
+    "C2b": {
+      "binary_risk_detection": {
+        "accuracy": 0.602685,
+        "macro_precision": 0.718472,
+        "macro_recall": 0.590269,
+        "macro_f1": 0.527235,
+        "weighted_f1": 0.533402,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1381,
+              42
+            ],
+            [
+              1053,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.970485,
+              0.029515
+            ],
+            [
+              0.789947,
+              0.210053
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.501089,
+        "macro_precision": 0.440636,
+        "macro_recall": 0.654418,
+        "macro_f1": 0.515277,
+        "weighted_f1": 0.349817,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.452342,
+            "recall": 0.963255,
+            "f1": 0.6156,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 0.869565,
+            "recall": 1.0,
+            "f1": 0.930233,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1101,
+              0,
+              42
+            ],
+            [
+              1333,
+              0,
+              0
+            ],
+            [
+              0,
+              0,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.963255,
+              0.0,
+              0.036745
+            ],
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    "C3": {
+      "binary_risk_detection": {
+        "accuracy": 0.566763,
+        "macro_precision": 0.771876,
+        "macro_recall": 0.552138,
+        "macro_f1": 0.446657,
+        "weighted_f1": 0.455076,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1423,
+              0
+            ],
+            [
+              1194,
+              139
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0
+            ],
+            [
+              0.895724,
+              0.104276
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.43106,
+        "macro_precision": 0.495755,
+        "macro_recall": 0.382203,
+        "macro_f1": 0.288321,
+        "weighted_f1": 0.280925,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.43676,
+            "recall": 1.0,
+            "f1": 0.607979,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.050505,
+            "recall": 0.003751,
+            "f1": 0.006983,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 0.142857,
+            "f1": 0.25,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1143,
+              0,
+              0
+            ],
+            [
+              1328,
+              5,
+              0
+            ],
+            [
+              146,
+              94,
+              40
+            ]
+          ],
+          "normalized": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.996249,
+              0.003751,
+              0.0
+            ],
+            [
+              0.521429,
+              0.335714,
+              0.142857
+            ]
+          ]
+        }
+      }
+    },
+    "C4-Heuristic": {
+      "binary_risk_detection": {
+        "accuracy": 0.826197,
+        "macro_precision": 0.848727,
+        "macro_recall": 0.821991,
+        "macro_f1": 0.821882,
+        "weighted_f1": 0.822787,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1353,
+              70
+            ],
+            [
+              409,
+              924
+            ]
+          ],
+          "normalized": [
+            [
+              0.950808,
+              0.049192
+            ],
+            [
+              0.306827,
+              0.693173
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.724601,
+        "macro_precision": 0.836976,
+        "macro_recall": 0.807293,
+        "macro_f1": 0.789313,
+        "weighted_f1": 0.712303,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.608967,
+            "recall": 0.938758,
+            "f1": 0.738726,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.901961,
+            "recall": 0.483121,
+            "f1": 0.629213,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1073,
+              70,
+              0
+            ],
+            [
+              689,
+              644,
+              0
+            ],
+            [
+              0,
+              0,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.938758,
+              0.061242,
+              0.0
+            ],
+            [
+              0.516879,
+              0.483121,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    },
+    "C4-ML": {
+      "binary_risk_detection": {
+        "accuracy": 0.846517,
+        "macro_precision": 0.858374,
+        "macro_recall": 0.843518,
+        "macro_f1": 0.844298,
+        "weighted_f1": 0.844905,
+        "confusion_matrix": {
+          "labels": [
+            "BENIGN",
+            "ATTACK"
+          ],
+          "counts": [
+            [
+              1331,
+              92
+            ],
+            [
+              331,
+              1002
+            ]
+          ],
+          "normalized": [
+            [
+              0.935348,
+              0.064652
+            ],
+            [
+              0.248312,
+              0.751688
+            ]
+          ]
+        }
+      },
+      "three_class": {
+        "accuracy": 0.74492,
+        "macro_precision": 0.839783,
+        "macro_recall": 0.820382,
+        "macro_f1": 0.807314,
+        "weighted_f1": 0.737688,
+        "per_class": {
+          "SAFE": {
+            "precision": 0.632371,
+            "recall": 0.91951,
+            "f1": 0.749376,
+            "support": 1143
+          },
+          "EARLY_RISK": {
+            "precision": 0.886978,
+            "recall": 0.541635,
+            "f1": 0.672566,
+            "support": 1333
+          },
+          "VIOLATION": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "support": 280
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "SAFE",
+            "EARLY_RISK",
+            "VIOLATION"
+          ],
+          "counts": [
+            [
+              1051,
+              92,
+              0
+            ],
+            [
+              611,
+              722,
+              0
+            ],
+            [
+              0,
+              0,
+              280
+            ]
+          ],
+          "normalized": [
+            [
+              0.91951,
+              0.08049,
+              0.0
+            ],
+            [
+              0.458365,
+              0.541635,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "per_family_confidence_intervals": {
+    "method": "scenario bootstrap",
+    "n_boot": 1000,
+    "seed": 42,
+    "families": {
+      "all_public_workflow": {
+        "attack_scenarios": 0,
+        "benign_scenarios": 42,
+        "C0": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C3": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "authorized_external_partner": {
+        "attack_scenarios": 0,
+        "benign_scenarios": 42,
+        "C0": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C3": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "benign": {
+            "false_alert_rate": 0.6905,
+            "false_alert_ci95": [
+              0.5476,
+              0.8333
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "benign": {
+            "false_alert_rate": 0.6905,
+            "false_alert_ci95": [
+              0.5476,
+              0.8333
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "confidential_decoy_public_send": {
+        "attack_scenarios": 0,
+        "benign_scenarios": 42,
+        "C0": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "benign": {
+            "false_alert_rate": 1.0,
+            "false_alert_ci95": [
+              1.0,
+              1.0
+            ],
+            "false_block_rate": 1.0,
+            "false_block_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "benign": {
+            "false_alert_rate": 1.0,
+            "false_alert_ci95": [
+              1.0,
+              1.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "derived_fact_leakage": {
+        "attack_scenarios": 40,
+        "benign_scenarios": 0,
+        "C0": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.45,
+            "detection_rate_ci95": [
+              0.3,
+              0.6
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "direct_leakage": {
+        "attack_scenarios": 40,
+        "benign_scenarios": 0,
+        "C0": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C2": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C2b": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "internal_only_workflow": {
+        "attack_scenarios": 0,
+        "benign_scenarios": 42,
+        "C0": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C3": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "benign": {
+            "false_alert_rate": 0.5,
+            "false_alert_ci95": [
+              0.3333,
+              0.6429
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "benign": {
+            "false_alert_rate": 0.5,
+            "false_alert_ci95": [
+              0.3333,
+              0.6429
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "long_horizon_benign_memory": {
+        "attack_scenarios": 0,
+        "benign_scenarios": 42,
+        "C0": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C3": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "benign": {
+            "false_alert_rate": 0.0,
+            "false_alert_ci95": [
+              0.0,
+              0.0
+            ],
+            "false_block_rate": 0.0,
+            "false_block_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        }
+      },
+      "long_horizon_leakage": {
+        "attack_scenarios": 40,
+        "benign_scenarios": 0,
+        "C0": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.25,
+            "detection_rate_ci95": [
+              0.125,
+              0.4
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "memory_mediated_leakage": {
+        "attack_scenarios": 40,
+        "benign_scenarios": 0,
+        "C0": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.15,
+            "detection_rate_ci95": [
+              0.05,
+              0.275
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "mixed_source_leakage": {
+        "attack_scenarios": 40,
+        "benign_scenarios": 0,
+        "C0": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.675,
+            "detection_rate_ci95": [
+              0.525,
+              0.8
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "paraphrase_leakage": {
+        "attack_scenarios": 40,
+        "benign_scenarios": 0,
+        "C0": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.45,
+            "detection_rate_ci95": [
+              0.3,
+              0.6
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      },
+      "summary_leakage": {
+        "attack_scenarios": 40,
+        "benign_scenarios": 0,
+        "C0": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C1": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.0,
+            "detection_rate_ci95": [
+              0.0,
+              0.0
+            ]
+          }
+        },
+        "C2b": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C3": {
+          "attack": {
+            "asr": 1.0,
+            "asr_ci95": [
+              1.0,
+              1.0
+            ],
+            "block_rate": 0.0,
+            "block_rate_ci95": [
+              0.0,
+              0.0
+            ],
+            "detection_rate": 0.375,
+            "detection_rate_ci95": [
+              0.225,
+              0.525
+            ]
+          }
+        },
+        "C4-Heuristic": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        },
+        "C4-ML": {
+          "attack": {
+            "asr": 0.0,
+            "asr_ci95": [
+              0.0,
+              0.0
+            ],
+            "block_rate": 1.0,
+            "block_rate_ci95": [
+              1.0,
+              1.0
+            ],
+            "detection_rate": 1.0,
+            "detection_rate_ci95": [
+              1.0,
+              1.0
+            ]
+          }
+        }
+      }
+    }
+  },
   "R3_early_warning_lead": [
     {
       "config": "C0",
@@ -960,45 +4694,45 @@
   "R4_runtime_latency_ms": [
     {
       "config": "C0",
-      "mean_latency_ms": 0.2633,
-      "median_latency_ms": 0.1866,
-      "p95_latency_ms": 0.5849
+      "mean_latency_ms": 0.3962,
+      "median_latency_ms": 0.2369,
+      "p95_latency_ms": 0.7559
     },
     {
       "config": "C1",
-      "mean_latency_ms": 0.3307,
-      "median_latency_ms": 0.261,
-      "p95_latency_ms": 0.6801
+      "mean_latency_ms": 0.4222,
+      "median_latency_ms": 0.2651,
+      "p95_latency_ms": 0.8275
     },
     {
       "config": "C2",
-      "mean_latency_ms": 0.3103,
-      "median_latency_ms": 0.246,
-      "p95_latency_ms": 0.6499
+      "mean_latency_ms": 0.3547,
+      "median_latency_ms": 0.2469,
+      "p95_latency_ms": 0.7067
     },
     {
       "config": "C2b",
-      "mean_latency_ms": 0.3247,
-      "median_latency_ms": 0.2669,
-      "p95_latency_ms": 0.692
+      "mean_latency_ms": 0.2832,
+      "median_latency_ms": 0.2067,
+      "p95_latency_ms": 0.6141
     },
     {
       "config": "C3",
-      "mean_latency_ms": 72.6865,
-      "median_latency_ms": 68.0181,
-      "p95_latency_ms": 92.7015
+      "mean_latency_ms": 68.96,
+      "median_latency_ms": 65.5281,
+      "p95_latency_ms": 84.0698
     },
     {
       "config": "C4-Heuristic",
-      "mean_latency_ms": 0.3296,
-      "median_latency_ms": 0.2645,
-      "p95_latency_ms": 0.686
+      "mean_latency_ms": 0.306,
+      "median_latency_ms": 0.2163,
+      "p95_latency_ms": 0.6487
     },
     {
       "config": "C4-ML",
-      "mean_latency_ms": 4.8039,
-      "median_latency_ms": 4.6683,
-      "p95_latency_ms": 7.3234
+      "mean_latency_ms": 6.1391,
+      "median_latency_ms": 5.5944,
+      "p95_latency_ms": 11.3349
     }
   ],
   "R5_component_ablations": [
@@ -1039,9 +4773,9 @@
       ],
       "mean_lead_steps": 3.6179,
       "median_lead_steps": 3.5,
-      "mean_latency_ms": 6.4046,
-      "median_latency_ms": 5.4588,
-      "p95_latency_ms": 9.7794
+      "mean_latency_ms": 7.4983,
+      "median_latency_ms": 6.9924,
+      "p95_latency_ms": 11.4155
     },
     {
       "config": "R5.1_No_Sensitivity_Inheritance",
@@ -1080,9 +4814,9 @@
       ],
       "mean_lead_steps": 3.6179,
       "median_lead_steps": 3.5,
-      "mean_latency_ms": 4.2632,
-      "median_latency_ms": 3.77,
-      "p95_latency_ms": 7.1532
+      "mean_latency_ms": 7.4264,
+      "median_latency_ms": 6.9893,
+      "p95_latency_ms": 11.4363
     },
     {
       "config": "R5.2_No_Memory_Lineage",
@@ -1121,9 +4855,9 @@
       ],
       "mean_lead_steps": 3.6179,
       "median_lead_steps": 3.5,
-      "mean_latency_ms": 3.3708,
-      "median_latency_ms": 2.5012,
-      "p95_latency_ms": 6.0949
+      "mean_latency_ms": 8.174,
+      "median_latency_ms": 7.8034,
+      "p95_latency_ms": 12.2731
     },
     {
       "config": "R5.3_Policy_Only_No_Risk_Fusion",
@@ -1162,9 +4896,9 @@
       ],
       "mean_lead_steps": 0.0,
       "median_lead_steps": 0.0,
-      "mean_latency_ms": 3.2791,
-      "median_latency_ms": 2.5042,
-      "p95_latency_ms": 6.0877
+      "mean_latency_ms": 7.6191,
+      "median_latency_ms": 6.9663,
+      "p95_latency_ms": 11.5679
     }
   ]
 }

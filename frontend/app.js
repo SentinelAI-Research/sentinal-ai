@@ -145,6 +145,40 @@ function formatNumber(val, digits = 2) {
   return val.toFixed(digits);
 }
 
+function renderScenarioSummary(container, detail) {
+  if (!container) return;
+  container.innerHTML = detail ? `
+    <div class="scenario-summary-main">
+      <div>
+        <div class="section-kicker">SCENARIO VISUAL SUMMARY</div>
+        <h3>${escapeHtml(detail.title || "Scenario fixture")}</h3>
+        <p>${escapeHtml(detail.description || "")}</p>
+      </div>
+      ${detail.sensitivity ? `<span class="pill ${detail.sensitivity === "CONFIDENTIAL" ? "red" : detail.sensitivity === "INTERNAL" ? "amber" : "green"}">${escapeHtml(detail.sensitivity)}</span>` : ""}
+    </div>
+    <div class="scenario-flow" aria-label="Scenario action flow">
+      ${(detail.flow || []).map((step, index, flow) =>
+        `<span class="scenario-flow-step">${escapeHtml(step)}</span>${index < flow.length - 1 ? `<span class="scenario-flow-arrow" aria-hidden="true">→</span>` : ""}`
+      ).join("")}
+    </div>
+    ${detail.expected || detail.risk ? `<p class="scenario-summary-note"><strong>What to watch:</strong> ${escapeHtml(detail.expected || detail.risk)}</p>` : ""}
+  ` : `<div class="empty-state">Select a scenario to view its visual summary.</div>`;
+}
+
+function renderLLMScenarioSummary() {
+  const select = document.getElementById("llm-scenario");
+  const container = document.getElementById("llm-scenario-summary");
+  if (!select || !container) return;
+  renderScenarioSummary(container, llmConfiguration?.scenario_details?.[select.value]);
+}
+
+function renderV5FamilySummary() {
+  const select = document.getElementById("v5-family-select");
+  const container = document.getElementById("v5-family-summary");
+  if (!select || !container) return;
+  renderScenarioSummary(container, v5ScenarioCatalog?.family_details?.[select.value]);
+}
+
 function extractReportTables(report) {
   if (!report || typeof report !== "object") return [];
   const entries = [];
@@ -193,6 +227,177 @@ function computeBestConfigs(report) {
     lowestLatency: pickBy(r => r.mean_latency_ms ?? r.latency_ms, false),
     allRows: rows
   };
+}
+
+function findV5WinningClassifier(preset) {
+  const testAuc = v5DevReportData?.test_auc_metrics || v5ReportData?.test_auc_metrics;
+  const candidates = testAuc?.[preset];
+  if (!candidates || typeof candidates !== "object") return null;
+
+  const ranked = Object.entries(candidates)
+    .filter(([, metrics]) => typeof metrics?.test_pr_auc === "number")
+    .sort((a, b) => b[1].test_pr_auc - a[1].test_pr_auc);
+
+  return ranked[0] ? { name: ranked[0][0], metrics: ranked[0][1] } : null;
+}
+
+function formatV5Ci(mean, ci) {
+  if (typeof mean !== "number" || !Array.isArray(ci) || ci.length !== 2) return "—";
+  return `${formatMetricPercent(mean)} [${formatMetricPercent(ci[0])}, ${formatMetricPercent(ci[1])}]`;
+}
+
+function renderV5ConfusionMatrix(matrix) {
+  if (!matrix?.counts || !Array.isArray(matrix.labels)) return "";
+  const labels = matrix.labels;
+  return `
+    <div class="table-wrap v5-confusion-wrap">
+      <table>
+        <thead><tr><th>True \\ Predicted</th>${labels.map(label => `<th>${escapeHtml(label)}</th>`).join("")}</tr></thead>
+        <tbody>
+          ${matrix.counts.map((row, index) => `
+            <tr>
+              <td><strong>${escapeHtml(labels[index] || "—")}</strong></td>
+              ${row.map((value, columnIndex) => {
+                const normalized = matrix.normalized?.[index]?.[columnIndex];
+                return `<td class="numeric">${typeof value === "number" ? value : "—"}${typeof normalized === "number" ? `<small class="v5-normalized-value">${formatMetricPercent(normalized)}</small>` : ""}</td>`;
+              }).join("")}
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderV5AdvancedMetrics() {
+  const stepMetrics = v5ReportData?.step_classification_metrics;
+  const testAuc = v5DevReportData?.test_auc_metrics || v5ReportData?.test_auc_metrics;
+  const familyCis = v5ReportData?.per_family_confidence_intervals;
+  if (!stepMetrics && !testAuc && !familyCis) return "";
+
+  let html = "";
+
+  if (stepMetrics && typeof stepMetrics === "object") {
+    html += `
+      <article class="card content-card v5-advanced-card">
+        <div class="section-kicker">HELD-OUT STEP CLASSIFICATION</div>
+        <h2>Step-Level Metrics</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Configuration</th><th>Accuracy</th><th>Macro Precision</th><th>Macro Recall</th><th>Macro F1</th><th>Weighted F1</th></tr></thead>
+            <tbody>
+              ${Object.entries(stepMetrics).map(([name, metrics]) => {
+                const three = metrics?.three_class || {};
+                return `<tr>
+                  <td><strong>${escapeHtml(name)}</strong></td>
+                  <td class="numeric">${formatNumber(three.accuracy, 6)}</td>
+                  <td class="numeric">${formatNumber(three.macro_precision, 6)}</td>
+                  <td class="numeric">${formatNumber(three.macro_recall, 6)}</td>
+                  <td class="numeric">${formatNumber(three.macro_f1, 6)}</td>
+                  <td class="numeric">${formatNumber(three.weighted_f1, 6)}</td>
+                </tr>`;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+        ${Object.entries(stepMetrics).map(([name, metrics]) => {
+          const perClass = metrics?.three_class?.per_class;
+          if (!perClass) return "";
+          return `
+            <details class="v5-metric-breakdown">
+              <summary>${escapeHtml(name)} · SAFE / EARLY_RISK / VIOLATION per-class metrics</summary>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1</th><th>Support</th></tr></thead>
+                  <tbody>${Object.entries(perClass).map(([className, values]) => `
+                    <tr>
+                      <td><strong>${escapeHtml(className)}</strong></td>
+                      <td class="numeric">${formatNumber(values.precision, 6)}</td>
+                      <td class="numeric">${formatNumber(values.recall, 6)}</td>
+                      <td class="numeric">${formatNumber(values.f1, 6)}</td>
+                      <td class="numeric">${typeof values.support === "number" ? values.support : "—"}</td>
+                    </tr>`).join("")}</tbody>
+                </table>
+              </div>
+              ${renderV5ConfusionMatrix(metrics?.three_class?.confusion_matrix)}
+              ${renderV5ConfusionMatrix(metrics?.binary_risk_detection?.confusion_matrix)}
+            </details>`;
+        }).join("")}
+      </article>`;
+  }
+
+  if (testAuc?.C3 || testAuc?.C4) {
+    html += `
+      <article class="card content-card v5-advanced-card">
+        <div class="section-kicker">TEST RANKING &amp; CALIBRATION</div>
+        <h2>Held-Out Classifier Metrics</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Preset</th><th>Classifier</th><th>Step Accuracy</th><th>Macro Precision</th><th>Macro Recall</th><th>Macro F1</th><th>Weighted F1</th><th>Test ROC-AUC</th><th>Test PR-AUC</th><th>F1 @ Threshold</th><th>Threshold</th></tr></thead>
+            <tbody>
+              ${["C3", "C4"].map(preset => {
+                return Object.entries(testAuc[preset] || {}).map(([modelName, metrics]) => {
+                  const step = metrics.step_classification_metrics || {};
+                  return `
+                  <tr>
+                    <td><strong>${escapeHtml(preset === "C4" ? "C4-ML" : preset)}</strong></td>
+                    <td>${escapeHtml(modelName)}</td>
+                    <td class="numeric">${formatNumber(step.accuracy, 6)}</td>
+                    <td class="numeric">${formatNumber(step.macro_precision, 6)}</td>
+                    <td class="numeric">${formatNumber(step.macro_recall, 6)}</td>
+                    <td class="numeric">${formatNumber(step.macro_f1, 6)}</td>
+                    <td class="numeric">${formatNumber(step.weighted_f1, 6)}</td>
+                    <td class="numeric">${formatNumber(metrics.test_roc_auc, 6)}</td>
+                    <td class="numeric">${formatNumber(metrics.test_pr_auc, 6)}</td>
+                    <td class="numeric">${formatNumber(metrics.test_f1_at_selected_threshold, 6)}</td>
+                    <td class="numeric">${formatNumber(metrics.selected_threshold, 4)}</td>
+                  </tr>`;
+                }).join("");
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+      </article>`;
+  }
+
+  if (familyCis?.families) {
+    const familyRows = [];
+    for (const [family, familyMetrics] of Object.entries(familyCis.families)) {
+      for (const [configName, configMetrics] of Object.entries(familyMetrics)) {
+        if (["attack_scenarios", "benign_scenarios"].includes(configName)) continue;
+        const attack = configMetrics?.attack;
+        const benign = configMetrics?.benign;
+        familyRows.push({
+          family,
+          configName,
+          attack,
+          benign
+        });
+      }
+    }
+    html += `
+      <article class="card content-card v5-advanced-card">
+        <div class="section-kicker">FAMILY-WISE UNCERTAINTY</div>
+        <h2>Per-Family 95% Bootstrap Confidence Intervals</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Family</th><th>Configuration</th><th>Attack ASR [95% CI]</th><th>Attack Detection [95% CI]</th><th>Attack Block [95% CI]</th><th>Benign FPR [95% CI]</th><th>Benign False-Block [95% CI]</th></tr></thead>
+            <tbody>
+              ${familyRows.map(row => `
+                <tr>
+                  <td><strong>${escapeHtml(row.family)}</strong></td>
+                  <td>${escapeHtml(row.configName)}</td>
+                  <td class="numeric">${row.attack ? formatV5Ci(row.attack.asr, row.attack.asr_ci95) : "—"}</td>
+                  <td class="numeric">${row.attack ? formatV5Ci(row.attack.detection_rate, row.attack.detection_rate_ci95) : "—"}</td>
+                  <td class="numeric">${row.attack ? formatV5Ci(row.attack.block_rate, row.attack.block_rate_ci95) : "—"}</td>
+                  <td class="numeric">${row.benign ? formatV5Ci(row.benign.false_alert_rate, row.benign.false_alert_ci95) : "—"}</td>
+                  <td class="numeric">${row.benign ? formatV5Ci(row.benign.false_block_rate, row.benign.false_block_ci95) : "—"}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </article>`;
+  }
+
+  return html;
 }
 
 function renderGlossarySection() {
@@ -345,9 +550,19 @@ const pages = {
             </button>
           </div>
         </div>
+        <div id="v5-family-summary" class="scenario-summary-card" aria-live="polite"></div>
 
         <div id="v5-run-status" class="agent-status" role="status" aria-live="polite">Ready to run</div>
         <p id="v5-run-error" class="agent-error" role="alert" hidden></p>
+
+        <section class="agent-panel v5-dag-fullwidth" style="margin-top:16px">
+          <div class="section-kicker">LIVE PROVENANCE GRAPH</div>
+          <h2>Directed Lineage &amp; Sensitivity Flow</h2>
+          <p class="muted small">The complete graph span is shown across the main workspace; click a node to inspect its live step details.</p>
+          <div id="v5-dag-view" class="dag-canvas-box v5-dag-wide">
+            <div class="empty-state">No simulation DAG generated yet.</div>
+          </div>
+        </section>
 
         <div class="v5-sim-layout" style="margin-top:16px">
           <section class="agent-panel" style="margin-bottom:0">
@@ -358,14 +573,9 @@ const pages = {
             </div>
           </section>
 
-          <section class="agent-panel" style="margin-bottom:0">
-            <div class="section-kicker">DYNAMIC PROVENANCE DAG</div>
-            <h2>Lineage &amp; Sensitivity Flow</h2>
-            <p class="muted small">Click any DAG node to inspect step features, sensitivity ancestry, and verdict.</p>
-            <div id="v5-dag-view" class="dag-canvas-box">
-              <div class="empty-state">No simulation DAG generated yet.</div>
-            </div>
+          <section class="agent-panel v5-step-inspector" style="margin-bottom:0">
             <div id="v5-dag-inspector" class="row-inspector-drawer" hidden></div>
+            <div id="v5-step-inspector-empty" class="empty-state">Run a simulation or select a graph node to inspect the step.</div>
           </section>
         </div>
       </article>
@@ -439,6 +649,7 @@ const pages = {
               <input id="llm-action-limit" name="max_actions" type="number" min="1" max="12" value="6" required />
             </label>
           </div>
+          <div id="llm-scenario-summary" class="scenario-summary-card" aria-live="polite"></div>
           <div class="llm-run-actions">
             <div class="llm-provider-label" id="llm-provider-label">Loading provider configuration…</div>
             <div class="llm-button-row">
@@ -942,6 +1153,36 @@ function getV5ObservationEntries() {
     }
   }
 
+  const stepMetrics = v5ReportData?.step_classification_metrics;
+  if (stepMetrics && typeof stepMetrics === "object") {
+    for (const [configuration, metrics] of Object.entries(stepMetrics)) {
+      entries.push({
+        key: `step:${configuration}`,
+        name: `${configuration} · step classification`,
+        source: "Held-out step classification",
+        group: "step-classification",
+        details: metrics
+      });
+    }
+  }
+
+  const testAuc = v5DevReportData?.test_auc_metrics || v5ReportData?.test_auc_metrics;
+  if (testAuc && typeof testAuc === "object") {
+    for (const [configuration, candidates] of Object.entries(testAuc)) {
+      if (!["C3", "C4"].includes(configuration) || !candidates || typeof candidates !== "object") continue;
+      for (const [modelName, metrics] of Object.entries(candidates)) {
+        if (!metrics || typeof metrics !== "object") continue;
+        entries.push({
+          key: `test:${configuration}:${modelName}`,
+          name: `${configuration} · ${modelName}`,
+          source: "Held-out test ranking/classification",
+          group: `test:${configuration}`,
+          details: metrics
+        });
+      }
+    }
+  }
+
   return entries;
 }
 
@@ -1082,6 +1323,13 @@ function renderV5Suite() {
 
   if (!kpiGrid || !modelBody || !tabsEl || !theadEl || !tbodyEl || !artifactsBody || !observationList || !observationDetail) return;
 
+  const familySelect = document.getElementById("v5-family-select");
+  if (familySelect && !familySelect.dataset.summaryBound) {
+    familySelect.dataset.summaryBound = "true";
+    familySelect.addEventListener("change", renderV5FamilySummary);
+  }
+  renderV5FamilySummary();
+
   if (!v5ReportData) {
     kpiGrid.innerHTML = `
       ${metricCard("V5 Test Report", "Unavailable", "Run V5 test evaluation to generate report", "amber")}
@@ -1143,9 +1391,46 @@ function renderV5Suite() {
       best.highestEarlyWarn ? `<span class="pill amber">Top Early Warning: ${escapeHtml(best.highestEarlyWarn.name)} (${formatMetricPercent(best.highestEarlyWarn.score)})</span>` : "",
       best.lowestLatency ? `<span class="pill gray">Fastest Monitor: ${escapeHtml(best.lowestLatency.name)} (${formatNumber(best.lowestLatency.score, 2)} ms)</span>` : ""
     ].filter(Boolean);
+    const c3Winner = findV5WinningClassifier("C3");
+    const c4Winner = findV5WinningClassifier("C4");
+    const winningModelCards = `
+      <div class="v5-winning-grid">
+        ${c3Winner ? `
+          <article class="v5-winning-card">
+            <div class="section-kicker">BEST C3 CLASSIFIER</div>
+            <h3>${escapeHtml(c3Winner.name)}</h3>
+            <p>Test PR-AUC ${formatNumber(c3Winner.metrics.test_pr_auc, 6)}; Test ROC-AUC ${formatNumber(c3Winner.metrics.test_roc_auc, 6)}; F1 @ threshold ${formatNumber(c3Winner.metrics.test_f1_at_selected_threshold, 6)}.</p>
+          </article>` : ""}
+        ${c4Winner ? `
+          <article class="v5-winning-card is-primary">
+            <div class="section-kicker">BEST C4-ML CLASSIFIER</div>
+            <h3>${escapeHtml(c4Winner.name)}</h3>
+            <p>Test PR-AUC ${formatNumber(c4Winner.metrics.test_pr_auc, 6)}; Test ROC-AUC ${formatNumber(c4Winner.metrics.test_roc_auc, 6)}; F1 @ threshold ${formatNumber(c4Winner.metrics.test_f1_at_selected_threshold, 6)}.</p>
+          </article>` : ""}
+      </div>`;
+    const runtimeRows = best.allRows;
+    const blockLeader = [...runtimeRows].sort((a, b) =>
+      (b.attack_block_rate ?? b.block_rate ?? -1) - (a.attack_block_rate ?? a.block_rate ?? -1)
+    )[0];
+    const warningLeader = [...runtimeRows].sort((a, b) =>
+      (b.early_warning_rate ?? -1) - (a.early_warning_rate ?? -1)
+    )[0];
+    const monitorObservations = `
+      <article class="v5-monitor-analysis">
+        <div class="section-kicker">WINNING MONITOR &amp; TRADE-OFF ANALYSIS</div>
+        <h3>${escapeHtml(warningLeader?.config || blockLeader?.config || "Configuration")}</h3>
+        <p>
+          This summary is derived only from the loaded R1 rows:
+          ${escapeHtml(blockLeader?.config || "—")} leads block rate at ${formatMetricPercent(blockLeader?.attack_block_rate ?? blockLeader?.block_rate)},
+          while ${escapeHtml(warningLeader?.config || "—")} leads early-warning rate at ${formatMetricPercent(warningLeader?.early_warning_rate)}.
+          Benign completion and false-alert metrics are shown beside every row so the security gain can be evaluated without ignoring utility.
+        </p>
+      </article>`;
 
     modelBody.innerHTML = `
       <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px">${highlights.join("")}</div>
+      ${winningModelCards}
+      ${monitorObservations}
       <div class="table-wrap">
         <table>
           <thead>
@@ -1182,6 +1467,7 @@ function renderV5Suite() {
           </tbody>
         </table>
       </div>
+      ${renderV5AdvancedMetrics()}
     `;
   } else {
     modelBody.innerHTML = `<div class="empty-state">Report loaded, but no tabular configuration comparison array was found.</div>`;
@@ -1431,40 +1717,44 @@ function renderV5SimulationOutput(sim) {
     `;
   }).join("");
 
-  dagEl.innerHTML = `
-    <div class="dag-node-list">
-      ${steps.map((st, idx) => {
-    const verdict = String(st.verdict || "NONE").toUpperCase();
-    const nodeCls = verdict === "BLOCK" ? "is-block" : verdict === "WARN" ? "is-warn" : "";
-    const selCls = idx === v5SelectedSimStep ? "is-selected" : "";
-    const pillCls = verdict === "BLOCK" ? "red" : verdict === "WARN" ? "amber" : "green";
-    const connector = idx < steps.length - 1
-      ? `<div class="dag-edge-connector">↓ lineage edge (prov_depth=${escapeHtml(st.provenance_depth ?? "?")}, xform_depth=${escapeHtml(st.transformation_depth ?? "?")})</div>`
-      : "";
-    return `
-          <button
-            type="button"
-            class="dag-node ${nodeCls} ${selCls}"
-            data-v5-sim-step="${idx}"
-          >
-            <div>
-              <strong>Node ${idx + 1}: ${escapeHtml(st.tool || "action")}</strong>
-              <div class="muted small">Dest: ${escapeHtml(st.destination || "internal")} · Sens. Ancestor: ${escapeHtml(st.has_sensitive_ancestor ?? "—")}</div>
-            </div>
-            <span class="pill ${pillCls}">${escapeHtml(verdict)}</span>
-          </button>
-          ${connector}
-        `;
-  }).join("")}
-    </div>
-  `;
+  const objects = steps.map((step, idx) => ({
+    object_id: `${step.scenario_id || "v5"}-step-${step.step ?? idx + 1}`,
+    source: step.destination || "live-runtime",
+    sensitivity: Number(step.has_sensitive_ancestor) === 1
+      ? "CONFIDENTIAL"
+      : "PUBLIC",
+    transformation: step.tool || "action",
+    verdict: step.verdict || "ALLOW",
+    risk: step.risk,
+    provenance_depth: step.provenance_depth,
+    transformation_depth: step.transformation_depth,
+    monitor_time_ms: step.monitor_time_ms,
+  }));
+  const edges = objects.slice(1).map((object, idx) => ({
+    parent_id: objects[idx].object_id,
+    child_id: object.object_id,
+  }));
+  renderAgentProvenance(dagEl, { objects, edges });
+
+  dagEl.querySelectorAll(".provenance-node").forEach((node, idx) => {
+    node.addEventListener("click", () => {
+      v5SelectedSimStep = idx;
+      renderV5SimStepInspector(steps[idx]);
+      feedEl.querySelectorAll("[data-v5-sim-step]").forEach((button, buttonIndex) => {
+        button.style.borderColor = buttonIndex === idx ? "#23765b" : "";
+        button.style.background = buttonIndex === idx ? "#f3faf6" : "";
+      });
+    });
+  });
 
   renderV5SimStepInspector(steps[v5SelectedSimStep] || steps[0]);
 }
 
 function renderV5SimStepInspector(step) {
   const inspector = document.getElementById("v5-dag-inspector");
+  const empty = document.getElementById("v5-step-inspector-empty");
   if (!inspector || !step) return;
+  if (empty) empty.hidden = true;
   inspector.hidden = false;
   inspector.innerHTML = `
     <div class="section-kicker">INSPECTED NODE / STEP</div>
@@ -1742,29 +2032,187 @@ function renderAgentInspector(container, step) {
 }
 
 function renderAgentProvenance(container, provenance) {
+  container.replaceChildren();
   const objects = provenance?.objects || [];
   const edges = provenance?.edges || [];
-  if (objects.length === 0 || edges.length === 0) {
+  if (objects.length === 0) {
     container.append(createTextBlock("p", "No provenance graph was produced for this run.", "empty-state"));
     return;
   }
+
+  container.append(createTextBlock("div", "LIVE PROVENANCE GRAPH", "section-kicker"));
+  container.append(createTextBlock("h2", "Nodes & directed lineage"));
+
+  const graphWrap = document.createElement("div");
+  graphWrap.className = "provenance-graph-wrap";
+
+  const controls = document.createElement("div");
+  controls.className = "provenance-graph-controls";
+  controls.innerHTML = `
+    <button type="button" data-graph-zoom="-0.15">−</button>
+    <button type="button" data-graph-fit>Fit</button>
+    <button type="button" data-graph-zoom="0.15">+</button>
+  `;
+  graphWrap.append(controls);
+
+  const width = Math.max(560, 180 + objects.length * 180);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", `0 0 ${width} 260`);
+  svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+  svg.classList.add("provenance-graph");
+
+  const nodeMap = new Map();
   const objectMap = new Map(objects.map(object => [object.object_id, object]));
-  const edgeList = document.createElement("ol");
-  edgeList.className = "agent-provenance-edges";
-  edges.forEach(edge => {
-    const parent = objectMap.get(edge.parent_id);
-    const child = objectMap.get(edge.child_id);
-    if (!parent || !child) return;
-    const item = document.createElement("li");
-    item.append(createTextBlock("strong", parent.object_id));
-    item.append(createTextBlock("span", ` ${parent.sensitivity} `, "agent-sensitivity"));
-    item.append(createTextBlock("span", "→", "agent-edge-arrow"));
-    item.append(createTextBlock("strong", child.object_id));
-    item.append(createTextBlock("span", ` ${child.sensitivity} `, "agent-sensitivity"));
-    item.append(createTextBlock("small", child.transformation || "source"));
-    edgeList.append(item);
+  const spacing = objects.length > 1 ? (width - 180) / (objects.length - 1) : 0;
+
+  objects.forEach((object, index) => {
+    const x = 90 + index * spacing;
+    const y = 130;
+    nodeMap.set(object.object_id, { x, y });
   });
-  container.append(edgeList);
+
+  const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+  defs.innerHTML = `
+    <marker id="provenance-arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#5d7770"></path>
+    </marker>`;
+  svg.append(defs);
+
+  edges.forEach(edge => {
+    const parent = nodeMap.get(edge.parent_id);
+    const child = nodeMap.get(edge.child_id);
+    if (!parent || !child) return;
+    const childObject = objectMap.get(edge.child_id);
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", parent.x + 58);
+    line.setAttribute("y1", parent.y);
+    line.setAttribute("x2", child.x - 58);
+    line.setAttribute("y2", child.y);
+    line.setAttribute("stroke", "#6e8580");
+    line.setAttribute("stroke-width", "2");
+    line.setAttribute("marker-end", "url(#provenance-arrow)");
+    line.classList.add("provenance-edge-line");
+    svg.append(line);
+
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", (parent.x + child.x) / 2);
+    label.setAttribute("y", parent.y - 18);
+    label.setAttribute("text-anchor", "middle");
+    label.setAttribute("class", "provenance-edge-label");
+    label.textContent = childObject?.transformation || "derived";
+    svg.append(label);
+  });
+
+  const inspector = document.createElement("div");
+  inspector.className = "provenance-node-inspector";
+  inspector.innerHTML = `<span class="muted small">Select a node to inspect live lineage details.</span>`;
+
+  const sensitivityClass = sensitivity => {
+    const normalized = String(sensitivity || "PUBLIC").toUpperCase();
+    if (normalized === "CONFIDENTIAL") return "confidential";
+    if (normalized === "INTERNAL") return "internal";
+    return "public";
+  };
+
+  objects.forEach((object, index) => {
+    const position = nodeMap.get(object.object_id);
+    if (!position) return;
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.setAttribute("transform", `translate(${position.x - 58} ${position.y - 48})`);
+    group.setAttribute("tabindex", "0");
+    group.setAttribute("role", "button");
+    group.setAttribute("aria-label", `Inspect ${object.object_id}`);
+    group.classList.add("provenance-node");
+
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("width", "116");
+    rect.setAttribute("height", "96");
+    rect.setAttribute("rx", "10");
+    rect.setAttribute("class", `provenance-node-box ${sensitivityClass(object.sensitivity)}`);
+    group.append(rect);
+
+    const indexText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    indexText.setAttribute("x", "58");
+    indexText.setAttribute("y", "20");
+    indexText.setAttribute("text-anchor", "middle");
+    indexText.setAttribute("class", "provenance-node-index");
+    indexText.textContent = `NODE ${index + 1}`;
+    group.append(indexText);
+
+    const typeText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    typeText.setAttribute("x", "58");
+    typeText.setAttribute("y", "43");
+    typeText.setAttribute("text-anchor", "middle");
+    typeText.setAttribute("class", "provenance-node-title");
+    typeText.textContent = (object.transformation || "source").slice(0, 18);
+    group.append(typeText);
+
+    const sensitivityText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    sensitivityText.setAttribute("x", "58");
+    sensitivityText.setAttribute("y", "64");
+    sensitivityText.setAttribute("text-anchor", "middle");
+    sensitivityText.setAttribute("class", "provenance-node-sensitivity");
+    sensitivityText.textContent = object.sensitivity || "PUBLIC";
+    group.append(sensitivityText);
+
+    const idText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    idText.setAttribute("x", "58");
+    idText.setAttribute("y", "82");
+    idText.setAttribute("text-anchor", "middle");
+    idText.setAttribute("class", "provenance-node-id");
+    idText.textContent = object.object_id.length > 15
+      ? `${object.object_id.slice(0, 12)}…`
+      : object.object_id;
+    group.append(idText);
+
+    const selectNode = () => {
+      svg.querySelectorAll(".provenance-node").forEach(node => node.classList.remove("is-selected"));
+      group.classList.add("is-selected");
+      inspector.innerHTML = `
+        <div class="section-kicker">SELECTED DATA OBJECT</div>
+        <strong>${escapeHtml(object.object_id)}</strong>
+        <div class="muted small">Sensitivity: ${escapeHtml(object.sensitivity || "PUBLIC")} · Source: ${escapeHtml(object.source || "—")} · Transform: ${escapeHtml(object.transformation || "source")}</div>
+        <pre>${escapeHtml(JSON.stringify(object, null, 2))}</pre>
+      `;
+    };
+    group.addEventListener("click", selectNode);
+    group.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        selectNode();
+      }
+    });
+    svg.append(group);
+  });
+
+  graphWrap.append(svg, inspector);
+  container.append(graphWrap);
+
+  let zoom = 1;
+  const baseView = `0 0 ${width} 260`;
+  const applyZoom = nextZoom => {
+    zoom = Math.max(0.55, Math.min(2.5, nextZoom));
+    const scaledWidth = width / zoom;
+    const scaledHeight = 260 / zoom;
+    const x = (width - scaledWidth) / 2;
+    const y = (260 - scaledHeight) / 2;
+    svg.setAttribute("viewBox", `${x} ${y} ${scaledWidth} ${scaledHeight}`);
+  };
+  controls.querySelector('[data-graph-zoom="-0.15"]').addEventListener("click", () => applyZoom(zoom - 0.15));
+  controls.querySelector('[data-graph-zoom="0.15"]').addEventListener("click", () => applyZoom(zoom + 0.15));
+  controls.querySelector("[data-graph-fit]").addEventListener("click", () => {
+    zoom = 1;
+    svg.setAttribute("viewBox", baseView);
+  });
+
+  const firstObject = objects[0];
+  if (firstObject) {
+    inspector.innerHTML = `
+      <div class="section-kicker">LIVE LINEAGE ROOT</div>
+      <strong>${escapeHtml(firstObject.object_id)}</strong>
+      <div class="muted small">Sensitivity: ${escapeHtml(firstObject.sensitivity || "PUBLIC")} · Transform: ${escapeHtml(firstObject.transformation || "source")}</div>
+    `;
+  }
 }
 
 function clearAgentRun() {
@@ -1842,6 +2290,8 @@ async function loadLLMLab() {
       opt.textContent = sc.replaceAll("_", " ");
       scenarioSelect.append(opt);
     });
+    scenarioSelect.addEventListener("change", renderLLMScenarioSummary);
+    renderLLMScenarioSummary();
     policySelect.replaceChildren();
     (config.policies || []).forEach(pol => {
       const opt = document.createElement("option");
@@ -1974,7 +2424,12 @@ function renderLLMRun(run) {
   top.className = "llm-run-heading";
   top.append(createTextBlock("div", `RUN · ${run.run_id}`, "agent-run-id"));
   top.append(createTextBlock("h2", llmStatusLabel(run.status)));
-  top.append(createTextBlock("p", `Mode: ${run.mode} · Provider: ${run.provider || "unavailable"} · Model: ${run.model || "unavailable"}`, "llm-muted"));
+  const liveLabel = run.mode === "live"
+    ? "LIVE PROVIDER"
+    : run.mode === "fake"
+      ? "OFFLINE FAKE PROVIDER"
+      : "DETERMINISTIC LOCAL";
+  top.append(createTextBlock("p", `Mode: ${run.mode} · ${liveLabel} · Provider: ${run.provider || "unavailable"} · Model: ${run.model || "unavailable"}`, "llm-muted"));
   container.append(top);
 
   const cards = document.createElement("div");
@@ -1985,6 +2440,10 @@ function renderLLMRun(run) {
   appendLLMMetric(cards, "WARN", metrics.warn || 0, "warning");
   appendLLMMetric(cards, "BLOCK", metrics.block || 0, "blocked");
   appendLLMMetric(cards, "Executed", metrics.executed || 0, "success");
+  const usage = run.usage && typeof run.usage === "object" ? run.usage : null;
+  appendLLMMetric(cards, "Input tokens", usage?.input_tokens ?? "Not returned", "running");
+  appendLLMMetric(cards, "Output tokens", usage?.output_tokens ?? "Not returned", "running");
+  appendLLMMetric(cards, "Total tokens", usage?.total_tokens ?? "Not returned", "running");
   container.append(cards);
 
   const eventLayout = document.createElement("div");
@@ -2008,13 +2467,119 @@ function renderLLMRun(run) {
   });
   timeline.append(list);
 
+  const selectedIndex = Math.min(
+    Math.max(Number(llmSelectedEvent) || 0, 0),
+    Math.max((run.events || []).length - 1, 0)
+  );
+  llmSelectedEvent = selectedIndex;
+  const selectedEvent = (run.events || [])[selectedIndex] || null;
+
+  const inspector = document.createElement("section");
+  inspector.className = "agent-panel llm-event-inspector";
+  inspector.append(createTextBlock("div", "EVENT & NODE INSPECTOR", "section-kicker"));
+  inspector.append(createTextBlock("h2", "Selected event"));
+
+  if (!selectedEvent) {
+    inspector.append(createTextBlock("p", "No event is available for this run.", "llm-muted"));
+  } else {
+    const data = selectedEvent.data && typeof selectedEvent.data === "object"
+      ? selectedEvent.data
+      : {};
+    const statusValue = selectedEvent.status
+      || selectedEvent.verdict
+      || data.status
+      || data.verdict
+      || selectedEvent.type
+      || "event";
+    const statusClass = String(statusValue).toLowerCase();
+    const toolValue = selectedEvent.tool
+      || data.tool
+      || data.action
+      || data.tool_name
+      || "—";
+    const policyRules = data.policy_hits
+      || data.matched_policy_rules
+      || data.matched_rules
+      || data.policy_rules
+      || data.rules
+      || [];
+    const inputValue = data.inputs
+      || data.input
+      || data.input_data_objects
+      || data.arguments
+      || data.proposal
+      || null;
+    const outputValue = data.outputs
+      || data.output
+      || data.output_data_object
+      || data.result
+      || data.decision
+      || null;
+    const timestamp = selectedEvent.timestamp
+      || selectedEvent.created_at
+      || data.timestamp
+      || data.created_at
+      || null;
+
+    const badge = document.createElement("span");
+    badge.className = `status-pill llm-inspector-status is-${escapeHtml(statusClass)}`;
+    badge.textContent = String(statusValue);
+    inspector.append(badge);
+
+    const summary = document.createElement("dl");
+    summary.className = "llm-inspector-summary";
+    const summaryRows = [
+      ["Event index", String(selectedIndex)],
+      ["Event type", String(selectedEvent.type || "event")],
+      ["Timestamp", timestamp ? String(timestamp) : "Not provided"],
+      ["Tool / action", String(toolValue)],
+      ["Matched policy rules", Array.isArray(policyRules)
+        ? (policyRules.length ? policyRules.join(", ") : "None")
+        : String(policyRules)]
+    ];
+    summaryRows.forEach(([label, value]) => {
+      const dt = document.createElement("dt");
+      dt.textContent = label;
+      const dd = document.createElement("dd");
+      dd.textContent = value;
+      summary.append(dt, dd);
+    });
+    inspector.append(summary);
+
+    const ioGrid = document.createElement("div");
+    ioGrid.className = "llm-inspector-io";
+    [
+      ["Inputs", inputValue],
+      ["Outputs", outputValue]
+    ].forEach(([label, value]) => {
+      const block = document.createElement("div");
+      block.className = "llm-inspector-block";
+      block.append(createTextBlock("h3", label));
+      const pre = document.createElement("pre");
+      pre.textContent = value === null || value === undefined
+        ? "None"
+        : JSON.stringify(value, null, 2);
+      block.append(pre);
+      ioGrid.append(block);
+    });
+    inspector.append(ioGrid);
+
+    const payload = document.createElement("section");
+    payload.className = "llm-inspector-payload";
+    payload.append(createTextBlock("h3", "Complete event JSON payload"));
+    const payloadPre = document.createElement("pre");
+    payloadPre.textContent = JSON.stringify(selectedEvent, null, 2);
+    payload.append(payloadPre);
+    inspector.append(payload);
+  }
+
   const provenance = document.createElement("section");
   provenance.className = "agent-panel llm-provenance";
   provenance.append(createTextBlock("div", "TRUSTED DATA LINEAGE", "section-kicker"));
   provenance.append(createTextBlock("h2", "Provenance"));
   renderAgentProvenance(provenance, run.provenance);
 
-  eventLayout.append(timeline, provenance);
+  eventLayout.append(timeline, inspector, provenance);
   container.append(eventLayout);
 }
 

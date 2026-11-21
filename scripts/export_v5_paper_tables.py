@@ -147,6 +147,36 @@ def build_latex_tables(
             "",
         ]
     )
+    if "test_auc_metrics" in test_report:
+        lines.extend(
+            [
+                "% ==========================================================================",
+                "% TABLE R6: HELD-OUT STEP CLASSIFICATION & TEST RANKING METRICS",
+                "% ==========================================================================",
+                "\\begin{table*}[t]",
+                "\\centering",
+                "\\caption{Held-Out V5 Step Classification and Test Ranking Metrics.}",
+                "\\label{tab:v5_r6_metrics}",
+                "\\begin{tabular}{@{}lcccccc@{}}",
+                "\\toprule",
+                "Preset & Family & Accuracy & Macro F1 & Weighted F1 & Test ROC-AUC & Test PR-AUC \\\\",
+                "\\midrule",
+            ]
+        )
+        auc = test_report["test_auc_metrics"]
+        for preset in ("C3", "C4"):
+            for model_name, model_metrics in sorted(auc.get(preset, {}).items()):
+                runtime_name = "C3" if preset == "C3" else "C4-ML"
+                three = model_metrics.get("step_classification_metrics", {})
+                lines.append(
+                    f"{runtime_name} & {model_name} & "
+                    f"{three.get('accuracy', 0):.4f} & "
+                    f"{three.get('macro_f1', 0):.4f} & "
+                    f"{three.get('weighted_f1', 0):.4f} & "
+                    f"{model_metrics.get('test_roc_auc') if model_metrics.get('test_roc_auc') is not None else 'N/A'} & "
+                    f"{model_metrics.get('test_pr_auc') if model_metrics.get('test_pr_auc') is not None else 'N/A'} \\\\"
+                )
+        lines.extend(["\\bottomrule", "\\end{tabular}", "\\end{table*}", ""])
     return "\n".join(lines)
 
 
@@ -237,6 +267,31 @@ def build_markdown_tables(
             f"| `{r['config']}` | {r['asr'] * 100:.1f}% | {r['attack_block_rate'] * 100:.1f}% "
             f"| {r['early_warning_rate'] * 100:.1f}% | {r['benign_completion_rate'] * 100:.1f}% |"
         )
+    if "test_auc_metrics" in test_report:
+        md.extend(
+            [
+                "",
+                "## Table R6: Held-Out Step Classification & Test Ranking Metrics",
+                "",
+                "| Preset | Classifier | Step Accuracy | Macro Precision | Macro Recall | Macro F1 | Weighted F1 | Test ROC-AUC | Test PR-AUC |",
+                "| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
+            ]
+        )
+        auc = test_report["test_auc_metrics"]
+        for preset in ("C3", "C4"):
+            runtime_name = "C3" if preset == "C3" else "C4-ML"
+            for model_name, model_metrics in sorted(auc.get(preset, {}).items()):
+                three = model_metrics.get("step_classification_metrics", {})
+                md.append(
+                    f"| {runtime_name} | {model_name} "
+                    f"| {three.get('accuracy', 0):.4f} "
+                    f"| {three.get('macro_precision', 0):.4f} "
+                    f"| {three.get('macro_recall', 0):.4f} "
+                    f"| {three.get('macro_f1', 0):.4f} "
+                    f"| {three.get('weighted_f1', 0):.4f} "
+                    f"| {model_metrics.get('test_roc_auc') if model_metrics.get('test_roc_auc') is not None else 'N/A'} "
+                    f"| {model_metrics.get('test_pr_auc') if model_metrics.get('test_pr_auc') is not None else 'N/A'} |"
+                )
     md.append("")
     return "\n".join(md)
 
